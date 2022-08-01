@@ -1,0 +1,22 @@
+menuconfig PACKAGE_PCIUTILS
+	bool "pciutils"
+if PACKAGE_PCIUTILS
+menuconfig PCIUTILS_BIN
+	bool "pciutils_bin"
+if PCIUTILS_BIN
+endif
+menuconfig PCIUTILS_SBIN
+	bool "pciutils_sbin"
+if PCIUTILS_SBIN
+config PCIUTILS_LSPCI
+	bool "lspci"
+config PCIUTILS_SETPCI
+	bool "setpci"
+config PCIUTILS_UPDATE-PCIIDS
+	bool "update-pciids"
+endif
+menuconfig PCIUTILS_LIB
+	bool "pciutils_lib"
+if PCIUTILS_LIB
+endif
+endif

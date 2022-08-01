@@ -1,0 +1,19 @@
+#!/bin/bash
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export LD_LIBRARY_PATH=/lib:/usr/lib:/lib64
+
+/bin/hostname rootfs
+
+/bin/mount -t proc none /proc
+/bin/mount -t sysfs none /sys
+
+/bin/mkdir -p /dev/pts
+/bin/mount -t devpts devpts /dev/pts
+
+/bin/mount -t devtmpfs none /dev
+
+mount -t debugfs nodev /sys/kernel/debug/
+
+mdev -s
+
+/bin/cat /etc/logo.txt

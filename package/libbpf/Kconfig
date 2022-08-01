@@ -1,0 +1,20 @@
+menuconfig PACKAGE_LIBBPF
+	bool "libbpf"
+if PACKAGE_LIBBPF
+menuconfig LIBBPF_BIN
+	bool "libbpf_bin"
+if LIBBPF_BIN
+endif
+menuconfig LIBBPF_SBIN
+	bool "libbpf_sbin"
+if LIBBPF_SBIN
+endif
+menuconfig LIBBPF_LIB
+	bool "libbpf_lib"
+if LIBBPF_LIB
+config LIBBPF_LIBBPF_SO_0
+	bool "libbpf_so_0"
+config LIBBPF_LIBBPF_SO_0_4_0
+	bool "libbpf_so_0_4_0"
+endif
+endif

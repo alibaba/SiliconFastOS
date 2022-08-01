@@ -1,0 +1,135 @@
+menuconfig PACKAGE_GLIBC
+	bool "glibc"
+
+if PACKAGE_GLIBC
+menuconfig GLIBC_BIN
+	bool "glibc_bin"
+if GLIBC_BIN
+config GLIBC_CATCHSEGV
+	bool "catchsegv"
+config GLIBC_GENCAT
+	bool "gencat"
+config GLIBC_GETCONF
+	bool "getconf"
+config GLIBC_GETENT
+	bool "getent"
+config GLIBC_ICONV
+	bool "iconv"
+config GLIBC_LDD
+	bool "ldd"
+config GLIBC_LOCALE
+	bool "locale"
+config GLIBC_LOCALEDEF
+	bool "localedef"
+config GLIBC_MAKEDB
+	bool "makedb"
+config GLIBC_MTRACE
+	bool "mtrace"
+config GLIBC_PCPROFILEDUMP
+	bool "pcprofiledump"
+config GLIBC_PLDD
+	bool "pldd"
+config GLIBC_SOTRUSS
+	bool "sotruss"
+config GLIBC_SPROF
+	bool "sprof"
+config GLIBC_TZSELECT
+	bool "tzselect"
+config GLIBC_XTRACE
+	bool "xtrace"
+endif
+menuconfig GLIBC_SBIN
+	bool "glibc_sbin"
+if GLIBC_SBIN
+config GLIBC_ICONVCONFIG
+	bool "iconvconfig"
+config GLIBC_LDCONFIG
+	bool "ldconfig"
+config GLIBC_NSCD
+	bool "nscd"
+config GLIBC_SLN
+	bool "sln"
+config GLIBC_ZDUMP
+	bool "zdump"
+config GLIBC_ZIC
+	bool "zic"
+endif
+menuconfig GLIBC_LIB
+	bool "glibc_lib"
+if GLIBC_LIB
+config GLIBC_LD-LINUX-AARCH64_SO_1
+	bool "ld-linux-aarch64_so_1"
+config GLIBC_LIBANL_SO
+	bool "libanl_so"
+config GLIBC_LIBANL_SO_1
+	bool "libanl_so_1"
+config GLIBC_LIBBROKENLOCALE_SO
+	bool "libBrokenLocale_so"
+config GLIBC_LIBBROKENLOCALE_SO_1
+	bool "libBrokenLocale_so_1"
+config GLIBC_LIBCRYPT_SO
+	bool "libcrypt_so"
+config GLIBC_LIBCRYPT_SO_1
+	bool "libcrypt_so_1"
+config GLIBC_LIBC_SO
+	bool "libc_so"
+config GLIBC_LIBC_SO_6
+	bool "libc_so_6"
+config GLIBC_LIBDL_SO
+	bool "libdl_so"
+config GLIBC_LIBDL_SO_2
+	bool "libdl_so_2"
+config GLIBC_LIBMEMUSAGE_SO
+	bool "libmemusage_so"
+config GLIBC_LIBM_SO
+	bool "libm_so"
+config GLIBC_LIBM_SO_6
+	bool "libm_so_6"
+config GLIBC_LIBNSL_SO_1
+	bool "libnsl_so_1"
+config GLIBC_LIBNSS_COMPAT_SO
+	bool "libnss_compat_so"
+config GLIBC_LIBNSS_COMPAT_SO_2
+	bool "libnss_compat_so_2"
+config GLIBC_LIBNSS_DB_SO
+	bool "libnss_db_so"
+config GLIBC_LIBNSS_DB_SO_2
+	bool "libnss_db_so_2"
+config GLIBC_LIBNSS_DNS_SO
+	bool "libnss_dns_so"
+config GLIBC_LIBNSS_DNS_SO_2
+	bool "libnss_dns_so_2"
+config GLIBC_LIBNSS_FILES_SO
+	bool "libnss_files_so"
+config GLIBC_LIBNSS_FILES_SO_2
+	bool "libnss_files_so_2"
+config GLIBC_LIBNSS_HESIOD_SO
+	bool "libnss_hesiod_so"
+config GLIBC_LIBNSS_HESIOD_SO_2
+	bool "libnss_hesiod_so_2"
+config GLIBC_LIBPCPROFILE_SO
+	bool "libpcprofile_so"
+config GLIBC_LIBPTHREAD_SO
+	bool "libpthread_so"
+config GLIBC_LIBPTHREAD_SO_0
+	bool "libpthread_so_0"
+config GLIBC_LIBRESOLV_SO
+	bool "libresolv_so"
+config GLIBC_LIBRESOLV_SO_2
+	bool "libresolv_so_2"
+config GLIBC_LIBRT_SO
+	bool "librt_so"
+config GLIBC_LIBRT_SO_1
+	bool "librt_so_1"
+config GLIBC_LIBSEGFAULT_SO
+	bool "libSegFault_so"
+config GLIBC_LIBTHREAD_DB_SO
+	bool "libthread_db_so"
+config GLIBC_LIBTHREAD_DB_SO_1
+	bool "libthread_db_so_1"
+config GLIBC_LIBUTIL_SO
+	bool "libutil_so"
+config GLIBC_LIBUTIL_SO_1
+	bool "libutil_so_1"
+endif
+endif

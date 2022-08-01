@@ -1,0 +1,54 @@
+menuconfig PACKAGE_ELFUTILS
+	bool "elfutils"
+if PACKAGE_ELFUTILS
+menuconfig ELFUTILS_BIN
+	bool "elfutils_bin"
+if ELFUTILS_BIN
+config ELFUTILS_EU-ADDR2LINE
+	bool "eu-addr2line"
+config ELFUTILS_EU-AR
+	bool "eu-ar"
+config ELFUTILS_EU-ELFCLASSIFY
+	bool "eu-elfclassify"
+config ELFUTILS_EU-ELFCMP
+	bool "eu-elfcmp"
+config ELFUTILS_EU-ELFCOMPRESS
+	bool "eu-elfcompress"
+config ELFUTILS_EU-ELFLINT
+	bool "eu-elflint"
+config ELFUTILS_EU-FINDTEXTREL
+	bool "eu-findtextrel"
+config ELFUTILS_EU-MAKE-DEBUG-ARCHIVE
+	bool "eu-make-debug-archive"
+config ELFUTILS_EU-NM
+	bool "eu-nm"
+config ELFUTILS_EU-OBJDUMP
+	bool "eu-objdump"
+config ELFUTILS_EU-RANLIB
+	bool "eu-ranlib"
+config ELFUTILS_EU-READELF
+	bool "eu-readelf"
+config ELFUTILS_EU-SIZE
+	bool "eu-size"
+config ELFUTILS_EU-STACK
+	bool "eu-stack"
+config ELFUTILS_EU-STRINGS
+	bool "eu-strings"
+config ELFUTILS_EU-STRIP
+	bool "eu-strip"
+config ELFUTILS_EU-UNSTRIP
+	bool "eu-unstrip"
+endif
+menuconfig ELFUTILS_SBIN
+	bool "elfutils_sbin"
+if ELFUTILS_SBIN
+endif
+menuconfig ELFUTILS_LIB
+	bool "elfutils_lib"
+if ELFUTILS_LIB
+config ELFUTILS_LIBELF-0_185_SO
+	bool "libelf-0_185_so"
+config ELFUTILS_LIBELF_SO_1
+	bool "libelf_so_1"
+endif
+endif

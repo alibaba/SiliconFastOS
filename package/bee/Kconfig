@@ -1,0 +1,2 @@
+menuconfig PACKAGE_BEE
+	bool "bee"

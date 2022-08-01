@@ -1,0 +1,94 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/kconfig-language.txt.
+#
+mainmenu "SifastOS Configuration"
+
+choice
+    prompt "SoftWare Repo"
+    default ANOLIS_PACKAGE_REPO
+
+config ANOLIS_PACKAGE_REPO
+    bool "Anolis repo"
+
+config OPENSOURCE_PACKAGE_REPO
+    bool "Opensource repp"
+
+endchoice
+
+
+menu "Share Library"
+    source "package/acl/Kconfig"
+    source "package/attr/Kconfig"
+    source "package/glibc/Kconfig"
+    source "package/libcap/Kconfig"
+    source "package/pcre/Kconfig"
+    source "package/pcre2/Kconfig"
+    source "package/libselinux/Kconfig"
+    source "package/libbpf/Kconfig"
+    source "package/elfutils/Kconfig"
+    source "package/libmnl/Kconfig"
+    source "package/zlib/Kconfig"
+endmenu
+
+menu "Archival Utilities"
+    source "package/busybox/Kconfig"
+    source "package/linux/Kconfig"
+endmenu
+
+menu "Coreutils"
+    source "package/coreutils/Kconfig"
+endmenu
+
+menu "Console Utilities"
+    source "package/ncurses/Kconfig"
+endmenu
+
+menu "Finding Utilities"
+    source "package/findutils/Kconfig"
+endmenu
+
+menu "Init Utilities"
+
+endmenu
+
+menu "Login/Password Management Utilities"
+    source "package/openssh/Kconfig"
+    source "package/dropbear/Kconfig"
+endmenu
+
+menu "Linux Module Utilities"
+    source "package/kmod/Kconfig"
+endmenu
+
+menu "Linux System Utilities"
+    source "package/pciutils/Kconfig"
+    source "package/util-linux/Kconfig"
+endmenu
+
+menu "Miscellaneous Utilities"
+
+endmenu
+
+menu "Networking Utilities"
+    source "package/net-tools/Kconfig"
+    source "package/iproute2/Kconfig"
+    source "package/iproute/Kconfig"
+    source "package/iputils/Kconfig"
+endmenu
+
+menu "Shells"
+    source "package/bash/Kconfig"
+endmenu
+
+menu "System Logging Utilities"
+
+endmenu
+
+menu "Silicon Validation framework and test suite"
+    source "package/bee/Kconfig"
+endmenu
+
+
+
+

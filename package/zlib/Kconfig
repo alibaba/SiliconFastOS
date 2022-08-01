@@ -1,0 +1,22 @@
+menuconfig PACKAGE_ZLIB
+	bool "zlib"
+if PACKAGE_ZLIB
+menuconfig ZLIB_BIN
+	bool "zlib_bin"
+if ZLIB_BIN
+endif
+menuconfig ZLIB_SBIN
+	bool "zlib_sbin"
+if ZLIB_SBIN
+endif
+menuconfig ZLIB_LIB
+	bool "zlib_lib"
+if ZLIB_LIB
+config ZLIB_LIBZ_SO
+	bool "libz_so"
+config ZLIB_LIBZ_SO_1
+	bool "libz_so_1"
+config ZLIB_LIBZ_SO_1_2_11
+	bool "libz_so_1_2_11"
+endif
+endif

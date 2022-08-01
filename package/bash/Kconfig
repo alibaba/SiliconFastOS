@@ -1,0 +1,16 @@
+menuconfig PACKAGE_BASH
+	bool "bash"
+if PACKAGE_BASH
+menuconfig BASH_BIN
+	bool "bash_bin"
+if BASH_BIN
+config BASH_BASH
+	bool "bash"
+config BASH_BASHBUG
+	bool "bashbug"
+endif
+menuconfig BASH_LIB
+	bool "bash_lib"
+if BASH_LIB
+endif
+endif

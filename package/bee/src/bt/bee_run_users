@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+feathures=("example")
+
+function user_case_list()
+{
+	for cf in ${feathures[@]}
+	do
+		echo "---------user_feature_name: $cf----------"
+		bash bee_$cf.sh -l
+		echo "------------end--------------"
+	done
+}
+
+function user_single_case()
+{
+	fa=$1
+	for cf in ${feathures[@]}
+	do
+		if [ "$fa" == "$cf" ]; then
+			bash bee_$cf.sh -s $2
+		fi
+	done
+	exit 0
+}
+
+function user_all_case()
+{
+	for cf in ${feathures[@]}
+	do
+		bash bee_$cf.sh -a
+	done
+	exit 0
+}
+
+function user_special_feature_cases()
+{
+	for cf in ${feathures[@]}
+	do
+		if [ "$1" == "$cf" ]; then
+			bash bee_$cf.sh -a
+		fi
+	done
+	exit 0
+}
+
+case $1 in
+	-l )
+		user_case_list
+		exit 0
+		;;
+	-a )
+		user_all_case
+		exit 0
+		;;
+	-f )
+		user_special_feature_cases $2
+		exit 0
+		;;
+	-r )
+		user_single_case $2 $3
+		exit 0
+		;;
+	* )
+		echo "error cmd for user cases!"
+		exit 1
+		;;
+esac

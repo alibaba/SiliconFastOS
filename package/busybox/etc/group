@@ -1,0 +1,15 @@
+root:x:0:
+tty:x:5:
+dialout:x:18:
+kmem:x:9:
+input:x:999:
+video:x:39:
+audio:x:63:
+lp:x:7:
+disk:x:6:
+cdrom:x:11:
+tape:x:33:
+floppy:x:19:
+wheel:x:10:
+adm:x:4:
+systemd-journal:x:190:

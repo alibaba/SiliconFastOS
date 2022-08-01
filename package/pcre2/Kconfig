@@ -1,0 +1,20 @@
+menuconfig PACKAGE_PCRE2
+	bool "pcre2"
+if PACKAGE_PCRE2
+menuconfig PCRE2_BIN
+	bool "pcre2_bin"
+if PCRE2_BIN
+endif
+menuconfig PCRE2_SBIN
+	bool "pcre2_sbin"
+if PCRE2_SBIN
+endif
+menuconfig PCRE2_LIB
+	bool "pcre2_lib"
+if PCRE2_LIB
+config PCRE2_LIBPCRE2-8_SO_0
+	bool "libpcre2-8_so_0"
+config PCRE2_LIBPCRE2-POSIX_SO_2
+	bool "libpcre2-posix_so_2"
+endif
+endif

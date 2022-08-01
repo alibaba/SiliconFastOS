@@ -1,0 +1,28 @@
+menuconfig PACKAGE_LIBCAP
+	bool "libcap"
+if PACKAGE_LIBCAP
+menuconfig LIBCAP_BIN
+	bool "libcap_bin"
+if LIBCAP_BIN
+endif
+menuconfig LIBCAP_SBIN
+	bool "libcap_sbin"
+if LIBCAP_SBIN
+config LIBCAP_CAPSH
+	bool "capsh"
+config LIBCAP_GETCAP
+	bool "getcap"
+config LIBCAP_GETPCAPS
+	bool "getpcaps"
+config LIBCAP_SETCAP
+	bool "setcap"
+endif
+menuconfig LIBCAP_LIB
+	bool "libcap_lib"
+if LIBCAP_LIB
+config LIBCAP_LIBCAP_SO
+	bool "libcap_so"
+config LIBCAP_LIBCAP_SO_2
+	bool "libcap_so_2"
+endif
+endif

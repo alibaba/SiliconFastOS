@@ -1,0 +1,44 @@
+menuconfig PACKAGE_LINUX
+	bool "linux"
+if PACKAGE_LINUX
+menuconfig LINUX_BIN
+	bool "linux_bin"
+if LINUX_BIN
+endif
+menuconfig LINUX_SBIN
+	bool "linux_sbin"
+if LINUX_SBIN
+endif
+menuconfig LINUX_LIB
+	bool "linux_lib"
+if LINUX_LIB
+endif
+endif
+if PACKAGE_LINUX
+menuconfig LINUX_BIN
+	bool "linux_bin"
+if LINUX_BIN
+endif
+menuconfig LINUX_SBIN
+	bool "linux_sbin"
+if LINUX_SBIN
+endif
+menuconfig LINUX_LIB
+	bool "linux_lib"
+if LINUX_LIB
+endif
+endif
+if PACKAGE_LINUX
+menuconfig LINUX_BIN
+	bool "linux_bin"
+if LINUX_BIN
+endif
+menuconfig LINUX_SBIN
+	bool "linux_sbin"
+if LINUX_SBIN
+endif
+menuconfig LINUX_LIB
+	bool "linux_lib"
+if LINUX_LIB
+endif
+endif

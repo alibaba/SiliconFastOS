@@ -1,0 +1,24 @@
+menuconfig PACKAGE_DROPBEAR
+	bool "dropbear"
+if PACKAGE_DROPBEAR
+menuconfig DROPBEAR_BIN
+	bool "dropbear_bin"
+if DROPBEAR_BIN
+config DROPBEAR_DBCLIENT
+	bool "dbclient"
+config DROPBEAR_DROPBEARCONVERT
+	bool "dropbearconvert"
+config DROPBEAR_DROPBEARKEY
+	bool "dropbearkey"
+endif
+menuconfig DROPBEAR_SBIN
+	bool "dropbear_sbin"
+if DROPBEAR_SBIN
+config DROPBEAR_DROPBEAR
+	bool "dropbear"
+endif
+menuconfig DROPBEAR_LIB
+	bool "dropbear_lib"
+if DROPBEAR_LIB
+endif
+endif

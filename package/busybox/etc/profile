@@ -1,0 +1,17 @@
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+export PATH
+
+export LD_LIBRARY_PATH=/lib:/lib64:/usr/lib:/usr/lib64:/usr/local/lib
+
+USER="`id -un`"
+export USER
+
+#set hostname
+HOSTNAME='SifastOS'
+export HOSTNAME
+
+HOME=/root
+export HOME
+
+PS1="[$USER@$HOSTNAME \W]\$"
+export PS1

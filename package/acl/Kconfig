@@ -1,0 +1,22 @@
+menuconfig PACKAGE_ACL
+	bool "acl"
+if PACKAGE_ACL
+menuconfig ACL_BIN
+	bool "acl_bin"
+if ACL_BIN
+config ACL_CHACL
+	bool "chacl"
+config ACL_GETFACL
+	bool "getfacl"
+config ACL_SETFACL
+	bool "setfacl"
+endif
+menuconfig ACL_LIB
+	bool "acl_lib"
+if ACL_LIB
+config ACL_LIBACL_SO
+	bool "libacl_so"
+config ACL_LIBACL_SO_1
+	bool "libacl_so_1"
+endif
+endif

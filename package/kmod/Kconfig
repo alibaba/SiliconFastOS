@@ -1,0 +1,39 @@
+menuconfig PACKAGE_KMOD
+	bool "kmod"
+
+if PACKAGE_KMOD
+menuconfig KMOD_BIN
+	bool "kmod_bin"
+if KMOD_BIN
+config KMOD_DEPMOD
+	bool "depmod"
+config KMOD_INSMOD
+	bool "insmod"
+config KMOD_KMOD
+	bool "kmod"
+config KMOD_LSMOD
+	bool "lsmod"
+config KMOD_MODINFO
+	bool "modinfo"
+config KMOD_MODPROBE
+	bool "modprobe"
+config KMOD_RMMOD
+	bool "rmmod"
+endif
+menuconfig KMOD_SBIN
+	bool "kmod_sbin"
+if KMOD_SBIN
+endif
+menuconfig KMOD_LIB
+	bool "kmod_lib"
+if KMOD_LIB
+config KMOD_LIBKMOD_LA
+	bool "libkmod_la"
+config KMOD_LIBKMOD_SO
+	bool "libkmod_so"
+config KMOD_LIBKMOD_SO_2
+	bool "libkmod_so_2"
+config KMOD_LIBKMOD_SO_2_3_6
+	bool "libkmod_so_2_3_6"
+endif
+endif

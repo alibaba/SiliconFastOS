@@ -1,0 +1,25 @@
+
+menu "Target packages"
+
+    source "package/bash/Kconfig"
+    source "package/bee/Kconfig"
+    source "package/busybox/Kconfig"
+    source "package/coreutils/Kconfig"
+    source "package/findutils/Kconfig"
+    source "package/glibc/Kconfig"
+    source "package/iproute2/Kconfig"
+    source "package/iputils/Kconfig"
+    source "package/linux/Kconfig"
+    source "package/net-tools/Kconfig"
+    source "package/openssh/Kconfig"
+    source "package/pciutils/Kconfig"
+    source "package/util-linux/Kconfig"
+    source "package/kmod/Kconfig"
+    source "package/attr/Kconfig"
+    source "package/pcre/Kconfig"
+    source "package/libcap/Kconfig"
+    source "package/libselinux/Kconfig"
+
+endmenu
+
+

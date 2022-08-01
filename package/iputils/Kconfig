@@ -1,0 +1,39 @@
+menuconfig PACKAGE_IPUTILS
+	bool "iputils"
+
+if PACKAGE_IPUTILS
+menuconfig IPUTILS_BIN
+	bool "iputils_bin"
+if IPUTILS_BIN
+config IPUTILS_ARPING
+	bool "arping"
+config IPUTILS_CLOCKDIFF
+	bool "clockdiff"
+config IPUTILS_IPG
+	bool "ipg"
+config IPUTILS_PING
+	bool "ping"
+config IPUTILS_PING6
+	bool "ping6"
+config IPUTILS_RARPD
+	bool "rarpd"
+config IPUTILS_RDISC
+	bool "rdisc"
+config IPUTILS_TFTPD
+	bool "tftpd"
+config IPUTILS_TRACEPATH
+	bool "tracepath"
+config IPUTILS_TRACEPATH6
+	bool "tracepath6"
+config IPUTILS_TRACEROUTE6
+	bool "traceroute6"
+endif
+menuconfig IPUTILS_SBIN
+	bool "iputils_sbin"
+if IPUTILS_SBIN
+endif
+menuconfig IPUTILS_LIB
+	bool "iputils_lib"
+if IPUTILS_LIB
+endif
+endif

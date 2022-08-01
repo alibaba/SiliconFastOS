@@ -1,0 +1,222 @@
+#!/bin/sh
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+export PATH=${BEETOPDIR}/bin:${BEETOPDIR}/ko:${BEETOPDIR}/lib64:$PATH
+export LD_LIBRARY_PATH=${BEETOPDIR}/lib64:$LD_LIBRARY_PATH
+#$1: module file name
+function module_insmod()
+{
+	if [ ! -d /sys/module/$1 ];
+	then
+		insmod ${BEETOPDIR}/ko/$1.ko > /dev/null  2>&1
+		if [ $? != 0 ]
+		then
+			return 1
+		fi
+	fi
+	return 0
+}
+
+function die()
+{
+	echo $1
+}
+
+function envready()
+{
+	module_insmod munit ||  die "munit module insmod failed"
+	touch ~/.bee_log
+	echo "feature pass fail" >> ~/.bee_log
+}
+
+function bee_list()
+{
+	echo "Bee Kernel Cases:"
+	bee_run_kernels -g
+
+	echo "Bee User Cases:"
+	bee_run_users -l
+}
+
+function bee_insmod_all_case()
+{
+	file=${BEETOPDIR}/ko/ko_config
+	for line in `cat $file`
+	do
+		insmod $line
+	done
+}
+
+function bee_run_all()
+{
+	rm -rf ~/.bee_log
+	touch ~/.bee_log
+	echo "feature pass fail" >> tee -a ~/.bee_log
+	echo "Run all Bee user Cases:"
+	bee_run_users -a
+	echo "Run all Bee kernel Cases:"
+	bee_insmod_all_case
+	bee_run_kernels -a
+}
+
+function bee_run_users_all()
+{
+	rm -rf ~/.bee_log
+	touch ~/.bee_log
+	echo "feature pass fail" >> tee -a ~/.bee_log
+	echo "Run all Bee user Cases:"
+	bee_run_users -a
+}
+
+function bee_run_kernel_cases()
+{
+	rm -rf ~/.bee_log
+	touch ~/.bee_log
+	echo "feature pass fail" >> tee -a ~/.bee_log
+	echo "Run all Bee user Cases:"
+	bee_insmod_all_case
+	bee_run_kernels -a
+}
+
+function bee_run_user_case()
+{
+	bee_run_users -r $1 $2
+}
+
+function bee_run_user_feature_cases()
+{
+	bee_run_users -f $1
+}
+
+function bee_run_kernel_module_cases()
+{
+	local res=""
+	filemodule=`ls /sys/kernel/debug/munit`
+	for file in ${filemodule}
+	do
+		if [ "$1" == "$file" ]; then
+			bee_run_kernels -m $1
+			res="module"
+		fi
+	done
+
+	if [ "$res" == "" ];then
+		bee_run_kernels -s $1
+	fi
+}
+
+function bee_module_install()
+{
+	if [ ! -d /sys/module/$1 ];
+	then
+		insmod ${BEETOPDIR}/ko/$1.ko $2
+	fi
+}
+
+function usage()
+{
+	cat << EOF
+
+Usage:
+$0 [-h]
+   [-k kernel_case_name]
+   [-k kernel_case_module]
+   [-u user_feature_name case_name]
+   [-u user_feature_name]
+   [-i module_name "arg1 arg2..."]
+   [-r module_name]
+   [-l] [-a]
+   [-v]
+   [-b]
+   [-c]
+
+Options:
+-h	Print this cmd help
+-k	1.run a kernel driver case, you just supply the case name
+	2.run all cases of the specail kernel driver, you must supply the kernel driver name
+
+-u	1.run a user case, you must supply the feature name and case name
+	2.when giving just one arg , this represent run all cases of this feature
+
+-l	list all cases name
+-a	run cases
+-i	insmod the kernel case ko, you need add the arg for the test ko
+-r	delete the module
+-v	the version of the bee test
+-b	run all users test cases
+-c	run all kernel test cases
+EOF
+}
+
+function version()
+{
+	echo "1.0.0"
+}
+
+envready
+
+while true; do
+case $1 in
+	-h )
+		usage
+		exit 0
+		;;
+	-k )
+		bee_run_kernel_module_cases $2
+		exit 0
+		;;
+	-u )
+		if [ $# == 3 ]; then
+			bee_run_user_case $2 $3
+		else
+			bee_run_user_feature_cases $2
+		fi
+		exit 0
+		;;
+	-l )
+		bee_list
+		exit 0
+		;;
+	-a )
+		bee_run_all
+		exit 0
+		;;
+	-i )
+		bee_module_install $2 "$3"
+		exit 0
+		;;
+	-v )
+		version
+		exit 0
+		;;
+	-r )
+		rmmod $2
+		exit 0
+		;;
+	-b )
+		bee_run_users_all
+		exit 0
+		;;
+	-c )
+		bee_run_kernel_cases
+		exit 0
+		;;
+	* )
+		echo "error cmd!"
+		exit 1
+		;;
+esac
+done

@@ -1,0 +1,34 @@
+menuconfig PACKAGE_PCRE
+	bool "pcre"
+if PACKAGE_PCRE
+menuconfig PCRE_BIN
+	bool "pcre_bin"
+if PCRE_BIN
+config PCRE_PCRE-CONFIG
+	bool "pcre-config"
+config PCRE_PCREGREP
+	bool "pcregrep"
+config PCRE_PCRETEST
+	bool "pcretest"
+endif
+menuconfig PCRE_SBIN
+	bool "pcre_sbin"
+if PCRE_SBIN
+endif
+menuconfig PCRE_LIB
+	bool "pcre_lib"
+if PCRE_LIB
+config PCRE_LIBPCRECPP_SO
+	bool "libpcrecpp_so"
+config PCRE_LIBPCRECPP_SO_0
+	bool "libpcrecpp_so_0"
+config PCRE_LIBPCREPOSIX_SO
+	bool "libpcreposix_so"
+config PCRE_LIBPCREPOSIX_SO_0
+	bool "libpcreposix_so_0"
+config PCRE_LIBPCRE_SO
+	bool "libpcre_so"
+config PCRE_LIBPCRE_SO_1
+	bool "libpcre_so_1"
+endif
+endif

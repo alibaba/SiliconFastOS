@@ -1,0 +1,20 @@
+menuconfig PACKAGE_LIBMNL
+	bool "libmnl"
+if PACKAGE_LIBMNL
+menuconfig LIBMNL_BIN
+	bool "libmnl_bin"
+if LIBMNL_BIN
+endif
+menuconfig LIBMNL_SBIN
+	bool "libmnl_sbin"
+if LIBMNL_SBIN
+endif
+menuconfig LIBMNL_LIB
+	bool "libmnl_lib"
+if LIBMNL_LIB
+config LIBMNL_LIBMNL_SO_0
+	bool "libmnl_so_0"
+config LIBMNL_LIBMNL_SO_0_2_0
+	bool "libmnl_so_0_2_0"
+endif
+endif
