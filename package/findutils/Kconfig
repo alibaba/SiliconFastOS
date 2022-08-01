@@ -1,0 +1,20 @@
+menuconfig PACKAGE_FINDUTILS
+	bool "finduilts"
+if PACKAGE_FINDUTILS
+menuconfig FINDUTILS_BIN
+	bool "findutils_bin"
+if FINDUTILS_BIN
+config FINDUTILS_FIND
+	bool "find"
+config FINDUTILS_LOCATE
+	bool "locate"
+config FINDUTILS_UPDATEDB
+	bool "updatedb"
+config FINDUTILS_XARGS
+	bool "xargs"
+endif
+menuconfig FINDUTILS_LIB
+	bool "findutils_lib"
+if FINDUTILS_LIB
+endif
+endif

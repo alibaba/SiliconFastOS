@@ -1,0 +1,18 @@
+menuconfig PACKAGE_LIBSELINUX
+	bool "libselinux"
+if PACKAGE_LIBSELINUX
+menuconfig LIBSELINUX_BIN
+	bool "libselinux_bin"
+if LIBSELINUX_BIN
+endif
+menuconfig LIBSELINUX_SBIN
+	bool "libselinux_sbin"
+if LIBSELINUX_SBIN
+endif
+menuconfig LIBSELINUX_LIB
+	bool "libselinux_lib"
+if LIBSELINUX_LIB
+config LIBSELINUX_LIBSELINUX_SO_1
+	bool "libselinux_so_1"
+endif
+endif

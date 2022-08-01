@@ -1,0 +1,22 @@
+menuconfig PACKAGE_ATTR
+	bool "attr"
+if PACKAGE_ATTR
+menuconfig ATTR_BIN
+	bool "attr_bin"
+if ATTR_BIN
+config ATTR_ATTR
+	bool "attr"
+config ATTR_GETFATTR
+	bool "getfattr"
+config ATTR_SETFATTR
+	bool "setfattr"
+endif
+menuconfig ATTR_LIB
+	bool "attr_lib"
+if ATTR_LIB
+config ATTR_LIBATTR_SO
+	bool "libattr_so"
+config ATTR_LIBATTR_SO_1
+	bool "libattr_so_1"
+endif
+endif

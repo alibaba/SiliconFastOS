@@ -1,0 +1,259 @@
+menuconfig PACKAGE_UTIL-LINUX
+	bool "util-linux"
+
+if PACKAGE_UTIL-LINUX
+menuconfig UTIL-LINUX_BIN
+	bool "util-linux_bin"
+if UTIL-LINUX_BIN
+config UTIL-LINUX_CAL
+	bool "cal"
+config UTIL-LINUX_CHFN
+	bool "chfn"
+config UTIL-LINUX_CHMEM
+	bool "chmem"
+config UTIL-LINUX_CHOOM
+	bool "choom"
+config UTIL-LINUX_CHRT
+	bool "chrt"
+config UTIL-LINUX_CHSH
+	bool "chsh"
+config UTIL-LINUX_COL
+	bool "col"
+config UTIL-LINUX_COLCRT
+	bool "colcrt"
+config UTIL-LINUX_COLRM
+	bool "colrm"
+config UTIL-LINUX_COLUMN
+	bool "column"
+config UTIL-LINUX_DMESG
+	bool "dmesg"
+config UTIL-LINUX_EJECT
+	bool "eject"
+config UTIL-LINUX_FALLOCATE
+	bool "fallocate"
+config UTIL-LINUX_FINCORE
+	bool "fincore"
+config UTIL-LINUX_FINDMNT
+	bool "findmnt"
+config UTIL-LINUX_FLOCK
+	bool "flock"
+config UTIL-LINUX_GETOPT
+	bool "getopt"
+config UTIL-LINUX_HARDLINK
+	bool "hardlink"
+config UTIL-LINUX_HEXDUMP
+	bool "hexdump"
+config UTIL-LINUX_IONICE
+	bool "ionice"
+config UTIL-LINUX_IPCMK
+	bool "ipcmk"
+config UTIL-LINUX_IPCRM
+	bool "ipcrm"
+config UTIL-LINUX_IPCS
+	bool "ipcs"
+config UTIL-LINUX_IRQTOP
+	bool "irqtop"
+config UTIL-LINUX_ISOSIZE
+	bool "isosize"
+config UTIL-LINUX_KILL
+	bool "kill"
+config UTIL-LINUX_LAST
+	bool "last"
+config UTIL-LINUX_LOGGER
+	bool "logger"
+config UTIL-LINUX_LOGIN
+	bool "login"
+config UTIL-LINUX_LOOK
+	bool "look"
+config UTIL-LINUX_LSBLK
+	bool "lsblk"
+config UTIL-LINUX_LSCPU
+	bool "lscpu"
+config UTIL-LINUX_LSIPC
+	bool "lsipc"
+config UTIL-LINUX_LSIRQ
+	bool "lsirq"
+config UTIL-LINUX_LSLOCKS
+	bool "lslocks"
+config UTIL-LINUX_LSLOGINS
+	bool "lslogins"
+config UTIL-LINUX_LSMEM
+	bool "lsmem"
+config UTIL-LINUX_LSNS
+	bool "lsns"
+config UTIL-LINUX_MCOOKIE
+	bool "mcookie"
+config UTIL-LINUX_MESG
+	bool "mesg"
+config UTIL-LINUX_MORE
+	bool "more"
+config UTIL-LINUX_MOUNT
+	bool "mount"
+config UTIL-LINUX_MOUNTPOINT
+	bool "mountpoint"
+config UTIL-LINUX_NAMEI
+	bool "namei"
+config UTIL-LINUX_NSENTER
+	bool "nsenter"
+config UTIL-LINUX_PRLIMIT
+	bool "prlimit"
+config UTIL-LINUX_RENAME
+	bool "rename"
+config UTIL-LINUX_RENICE
+	bool "renice"
+config UTIL-LINUX_REV
+	bool "rev"
+config UTIL-LINUX_SCRIPT
+	bool "script"
+config UTIL-LINUX_SCRIPTLIVE
+	bool "scriptlive"
+config UTIL-LINUX_SCRIPTREPLAY
+	bool "scriptreplay"
+config UTIL-LINUX_SETARCH
+	bool "setarch"
+config UTIL-LINUX_SETPRIV
+	bool "setpriv"
+config UTIL-LINUX_SETSID
+	bool "setsid"
+config UTIL-LINUX_SETTERM
+	bool "setterm"
+config UTIL-LINUX_SU
+	bool "su"
+config UTIL-LINUX_TASKSET
+	bool "taskset"
+config UTIL-LINUX_UL
+	bool "ul"
+config UTIL-LINUX_UMOUNT
+	bool "umount"
+config UTIL-LINUX_UNSHARE
+	bool "unshare"
+config UTIL-LINUX_UTMPDUMP
+	bool "utmpdump"
+config UTIL-LINUX_UUIDGEN
+	bool "uuidgen"
+config UTIL-LINUX_UUIDPARSE
+	bool "uuidparse"
+config UTIL-LINUX_WALL
+	bool "wall"
+config UTIL-LINUX_WDCTL
+	bool "wdctl"
+config UTIL-LINUX_WHEREIS
+	bool "whereis"
+endif
+menuconfig UTIL-LINUX_SBIN
+	bool "util-linux_sbin"
+if UTIL-LINUX_SBIN
+config UTIL-LINUX_ADDPART
+	bool "addpart"
+config UTIL-LINUX_AGETTY
+	bool "agetty"
+config UTIL-LINUX_BLKDISCARD
+	bool "blkdiscard"
+config UTIL-LINUX_BLKID
+	bool "blkid"
+config UTIL-LINUX_BLKZONE
+	bool "blkzone"
+config UTIL-LINUX_BLOCKDEV
+	bool "blockdev"
+config UTIL-LINUX_CFDISK
+	bool "cfdisk"
+config UTIL-LINUX_CHCPU
+	bool "chcpu"
+config UTIL-LINUX_CTRLALTDEL
+	bool "ctrlaltdel"
+config UTIL-LINUX_DELPART
+	bool "delpart"
+config UTIL-LINUX_FDFORMAT
+	bool "fdformat"
+config UTIL-LINUX_FDISK
+	bool "fdisk"
+config UTIL-LINUX_FINDFS
+	bool "findfs"
+config UTIL-LINUX_FSCK
+	bool "fsck"
+config UTIL-LINUX_FSCK_CRAMFS
+	bool "fsck_cramfs"
+config UTIL-LINUX_FSCK_MINIX
+	bool "fsck_minix"
+config UTIL-LINUX_FSFREEZE
+	bool "fsfreeze"
+config UTIL-LINUX_FSTRIM
+	bool "fstrim"
+config UTIL-LINUX_HWCLOCK
+	bool "hwclock"
+config UTIL-LINUX_LDATTACH
+	bool "ldattach"
+config UTIL-LINUX_LOSETUP
+	bool "losetup"
+config UTIL-LINUX_MKFS
+	bool "mkfs"
+config UTIL-LINUX_MKFS_BFS
+	bool "mkfs_bfs"
+config UTIL-LINUX_MKFS_CRAMFS
+	bool "mkfs_cramfs"
+config UTIL-LINUX_MKFS_MINIX
+	bool "mkfs_minix"
+config UTIL-LINUX_MKSWAP
+	bool "mkswap"
+config UTIL-LINUX_NOLOGIN
+	bool "nologin"
+config UTIL-LINUX_PARTX
+	bool "partx"
+config UTIL-LINUX_PIVOT_ROOT
+	bool "pivot_root"
+config UTIL-LINUX_RAW
+	bool "raw"
+config UTIL-LINUX_READPROFILE
+	bool "readprofile"
+config UTIL-LINUX_RESIZEPART
+	bool "resizepart"
+config UTIL-LINUX_RFKILL
+	bool "rfkill"
+config UTIL-LINUX_RTCWAKE
+	bool "rtcwake"
+config UTIL-LINUX_RUNUSER
+	bool "runuser"
+config UTIL-LINUX_SFDISK
+	bool "sfdisk"
+config UTIL-LINUX_SULOGIN
+	bool "sulogin"
+config UTIL-LINUX_SWAPLABEL
+	bool "swaplabel"
+config UTIL-LINUX_SWAPOFF
+	bool "swapoff"
+config UTIL-LINUX_SWAPON
+	bool "swapon"
+config UTIL-LINUX_SWITCH_ROOT
+	bool "switch_root"
+config UTIL-LINUX_UUIDD
+	bool "uuidd"
+config UTIL-LINUX_WIPEFS
+	bool "wipefs"
+config UTIL-LINUX_ZRAMCTL
+	bool "zramctl"
+endif
+menuconfig UTIL-LINUX_LIB
+	bool "util-linux_lib"
+if UTIL-LINUX_LIB
+config UTIL-LINUX_LIBBLKID_SO
+	bool "libblkid_so"
+config UTIL-LINUX_LIBBLKID_SO_1
+	bool "libblkid_so_1"
+config UTIL-LINUX_LIBFDISK_SO
+	bool "libfdisk_so"
+config UTIL-LINUX_LIBFDISK_SO_1
+	bool "libfdisk_so_1"
+config UTIL-LINUX_LIBMOUNT_SO
+	bool "libmount_so"
+config UTIL-LINUX_LIBMOUNT_SO_1
+	bool "libmount_so_1"
+config UTIL-LINUX_LIBSMARTCOLS_SO
+	bool "libsmartcols_so"
+config UTIL-LINUX_LIBSMARTCOLS_SO_1
+	bool "libsmartcols_so_1"
+config UTIL-LINUX_LIBUUID_SO
+	bool "libuuid_so"
+config UTIL-LINUX_LIBUUID_SO_1
+	bool "libuuid_so_1"
+endif
+endif

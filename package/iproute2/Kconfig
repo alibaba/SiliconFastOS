@@ -1,0 +1,51 @@
+menuconfig PACKAGE_IPROUTE2
+	bool "iproute2"
+
+if PACKAGE_IPROUTE2
+menuconfig IPROUTE2_BIN
+	bool "iproute2_bin"
+if IPROUTE2_BIN
+endif
+menuconfig IPROUTE2_SBIN
+	bool "iproute2_sbin"
+if IPROUTE2_SBIN
+config IPROUTE2_ARPD
+	bool "arpd"
+config IPROUTE2_BRIDGE
+	bool "bridge"
+config IPROUTE2_CTSTAT
+	bool "ctstat"
+config IPROUTE2_GENL
+	bool "genl"
+config IPROUTE2_IFCFG
+	bool "ifcfg"
+config IPROUTE2_IFSTAT
+	bool "ifstat"
+config IPROUTE2_IP
+	bool "ip"
+config IPROUTE2_LNSTAT
+	bool "lnstat"
+config IPROUTE2_NSTAT
+	bool "nstat"
+config IPROUTE2_ROUTEF
+	bool "routef"
+config IPROUTE2_ROUTEL
+	bool "routel"
+config IPROUTE2_RTACCT
+	bool "rtacct"
+config IPROUTE2_RTMON
+	bool "rtmon"
+config IPROUTE2_RTPR
+	bool "rtpr"
+config IPROUTE2_RTSTAT
+	bool "rtstat"
+config IPROUTE2_SS
+	bool "ss"
+config IPROUTE2_TC
+	bool "tc"
+endif
+menuconfig IPROUTE2_LIB
+	bool "iproute2_lib"
+if IPROUTE2_LIB
+endif
+endif

@@ -1,0 +1,48 @@
+menuconfig PACKAGE_NET-TOOLS
+	bool "net-tools"
+if PACKAGE_NET-TOOLS
+menuconfig NET-TOOLS_BIN
+	bool "net-tools_bin"
+if NET-TOOLS_BIN
+config NET-TOOLS_DNSDOMAINNAME
+	bool "dnsdomainname"
+config NET-TOOLS_DOMAINNAME
+	bool "domainname"
+config NET-TOOLS_HOSTNAME
+	bool "hostname"
+config NET-TOOLS_IFCONFIG
+	bool "ifconfig"
+config NET-TOOLS_NETSTAT
+	bool "netstat"
+config NET-TOOLS_NISDOMAINNAME
+	bool "nisdomainname"
+config NET-TOOLS_ROUTE
+	bool "route"
+config NET-TOOLS_YPDOMAINNAME
+	bool "ypdomainname"
+endif
+menuconfig NET-TOOLS_SBIN
+	bool "net-tools_sbin"
+if NET-TOOLS_SBIN
+config NET-TOOLS_ARP
+	bool "arp"
+config NET-TOOLS_IPMADDR
+	bool "ipmaddr"
+config NET-TOOLS_IPTUNNEL
+	bool "iptunnel"
+config NET-TOOLS_MII-TOOL
+	bool "mii-tool"
+config NET-TOOLS_NAMEIF
+	bool "nameif"
+config NET-TOOLS_PLIPCONFIG
+	bool "plipconfig"
+config NET-TOOLS_RARP
+	bool "rarp"
+config NET-TOOLS_SLATTACH
+	bool "slattach"
+endif
+menuconfig NET-TOOLS_LIB
+	bool "net-tools_lib"
+if NET-TOOLS_LIB
+endif
+endif

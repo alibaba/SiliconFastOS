@@ -1,0 +1,16 @@
+menuconfig PACKAGE_BUSYBOX
+	bool "busybox"
+if PACKAGE_BUSYBOX
+menuconfig BUSYBOX_BIN
+	bool "busybox_bin"
+if BUSYBOX_BIN
+endif
+menuconfig BUSYBOX_SBIN
+	bool "busybox_sbin"
+if BUSYBOX_SBIN
+endif
+menuconfig BUSYBOX_LIB
+	bool "busybox_lib"
+if BUSYBOX_LIB
+endif
+endif

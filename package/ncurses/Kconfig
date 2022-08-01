@@ -1,0 +1,56 @@
+menuconfig PACKAGE_NCURSES
+	bool "ncurses"
+if PACKAGE_NCURSES
+menuconfig NCURSES_BIN
+	bool "ncurses_bin"
+if NCURSES_BIN
+endif
+menuconfig NCURSES_SBIN
+	bool "ncurses_sbin"
+if NCURSES_SBIN
+endif
+menuconfig NCURSES_LIB
+	bool "ncurses_lib"
+if NCURSES_LIB
+config NCURSES_LIBFORM_SO_6
+	bool "libform_so_6"
+config NCURSES_LIBFORM_SO_6_1
+	bool "libform_so_6_1"
+config NCURSES_LIBFORMW_SO_6
+	bool "libformw_so_6"
+config NCURSES_LIBFORMW_SO_6_1
+	bool "libformw_so_6_1"
+config NCURSES_LIBMENU_SO_6
+	bool "libmenu_so_6"
+config NCURSES_LIBMENU_SO_6_1
+	bool "libmenu_so_6_1"
+config NCURSES_LIBMENUW_SO_6
+	bool "libmenuw_so_6"
+config NCURSES_LIBMENUW_SO_6_1
+	bool "libmenuw_so_6_1"
+config NCURSES_LIBNCURSES_SO_6
+	bool "libncurses_so_6"
+config NCURSES_LIBNCURSES_SO_6_1
+	bool "libncurses_so_6_1"
+config NCURSES_LIBNCURSESW_SO_6
+	bool "libncursesw_so_6"
+config NCURSES_LIBNCURSESW_SO_6_1
+	bool "libncursesw_so_6_1"
+config NCURSES_LIBPANEL_SO_6
+	bool "libpanel_so_6"
+config NCURSES_LIBPANEL_SO_6_1
+	bool "libpanel_so_6_1"
+config NCURSES_LIBPANELW_SO_6
+	bool "libpanelw_so_6"
+config NCURSES_LIBPANELW_SO_6_1
+	bool "libpanelw_so_6_1"
+config NCURSES_LIBTIC_SO_6
+	bool "libtic_so_6"
+config NCURSES_LIBTIC_SO_6_1
+	bool "libtic_so_6_1"
+config NCURSES_LIBTINFO_SO_6
+	bool "libtinfo_so_6"
+config NCURSES_LIBTINFO_SO_6_1
+	bool "libtinfo_so_6_1"
+endif
+endif

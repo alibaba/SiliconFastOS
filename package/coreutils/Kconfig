@@ -1,0 +1,224 @@
+menuconfig PACKAGE_COREUTILS
+	bool "coreutils"
+if PACKAGE_COREUTILS
+menuconfig COREUTILS_BIN
+	bool "coreutils_bin"
+if COREUTILS_BIN
+config COREUTILS_TEST
+	bool "test"
+config COREUTILS_B2SUM
+	bool "b2sum"
+config COREUTILS_BASE32
+	bool "base32"
+config COREUTILS_BASE64
+	bool "base64"
+config COREUTILS_BASENAME
+	bool "basename"
+config COREUTILS_BASENC
+	bool "basenc"
+config COREUTILS_CAT
+	bool "cat"
+config COREUTILS_CHCON
+	bool "chcon"
+config COREUTILS_CHGRP
+	bool "chgrp"
+config COREUTILS_CHMOD
+	bool "chmod"
+config COREUTILS_CHOWN
+	bool "chown"
+config COREUTILS_CHROOT
+	bool "chroot"
+config COREUTILS_CKSUM
+	bool "cksum"
+config COREUTILS_COMM
+	bool "comm"
+config COREUTILS_CP
+	bool "cp"
+config COREUTILS_CSPLIT
+	bool "csplit"
+config COREUTILS_CUT
+	bool "cut"
+config COREUTILS_DATE
+	bool "date"
+config COREUTILS_DD
+	bool "dd"
+config COREUTILS_DF
+	bool "df"
+config COREUTILS_DIR
+	bool "dir"
+config COREUTILS_DIRCOLORS
+	bool "dircolors"
+config COREUTILS_DIRNAME
+	bool "dirname"
+config COREUTILS_DU
+	bool "du"
+config COREUTILS_ECHO
+	bool "echo"
+config COREUTILS_ENV
+	bool "env"
+config COREUTILS_EXPAND
+	bool "expand"
+config COREUTILS_EXPR
+	bool "expr"
+config COREUTILS_FACTOR
+	bool "factor"
+config COREUTILS_FALSE
+	bool "false"
+config COREUTILS_FMT
+	bool "fmt"
+config COREUTILS_FOLD
+	bool "fold"
+config COREUTILS_GROUPS
+	bool "groups"
+config COREUTILS_HEAD
+	bool "head"
+config COREUTILS_HOSTID
+	bool "hostid"
+config COREUTILS_ID
+	bool "id"
+config COREUTILS_INSTALL
+	bool "install"
+config COREUTILS_JOIN
+	bool "join"
+config COREUTILS_KILL
+	bool "kill"
+config COREUTILS_LINK
+	bool "link"
+config COREUTILS_LN
+	bool "ln"
+config COREUTILS_LOGNAME
+	bool "logname"
+config COREUTILS_LS
+	bool "ls"
+config COREUTILS_MD5SUM
+	bool "md5sum"
+config COREUTILS_MKDIR
+	bool "mkdir"
+config COREUTILS_MKFIFO
+	bool "mkfifo"
+config COREUTILS_MKNOD
+	bool "mknod"
+config COREUTILS_MKTEMP
+	bool "mktemp"
+config COREUTILS_MV
+	bool "mv"
+config COREUTILS_NICE
+	bool "nice"
+config COREUTILS_NL
+	bool "nl"
+config COREUTILS_NOHUP
+	bool "nohup"
+config COREUTILS_NPROC
+	bool "nproc"
+config COREUTILS_NUMFMT
+	bool "numfmt"
+config COREUTILS_OD
+	bool "od"
+config COREUTILS_PASTE
+	bool "paste"
+config COREUTILS_PATHCHK
+	bool "pathchk"
+config COREUTILS_PINKY
+	bool "pinky"
+config COREUTILS_PR
+	bool "pr"
+config COREUTILS_PRINTENV
+	bool "printenv"
+config COREUTILS_PRINTF
+	bool "printf"
+config COREUTILS_PTX
+	bool "ptx"
+config COREUTILS_PWD
+	bool "pwd"
+config COREUTILS_READLINK
+	bool "readlink"
+config COREUTILS_REALPATH
+	bool "realpath"
+config COREUTILS_RM
+	bool "rm"
+config COREUTILS_RMDIR
+	bool "rmdir"
+config COREUTILS_RUNCON
+	bool "runcon"
+config COREUTILS_SEQ
+	bool "seq"
+config COREUTILS_SHA1SUM
+	bool "sha1sum"
+config COREUTILS_SHA224SUM
+	bool "sha224sum"
+config COREUTILS_SHA256SUM
+	bool "sha256sum"
+config COREUTILS_SHA384SUM
+	bool "sha384sum"
+config COREUTILS_SHA512SUM
+	bool "sha512sum"
+config COREUTILS_SHRED
+	bool "shred"
+config COREUTILS_SHUF
+	bool "shuf"
+config COREUTILS_SLEEP
+	bool "sleep"
+config COREUTILS_SORT
+	bool "sort"
+config COREUTILS_SPLIT
+	bool "split"
+config COREUTILS_STAT
+	bool "stat"
+config COREUTILS_STDBUF
+	bool "stdbuf"
+config COREUTILS_STTY
+	bool "stty"
+config COREUTILS_SUM
+	bool "sum"
+config COREUTILS_SYNC
+	bool "sync"
+config COREUTILS_TAC
+	bool "tac"
+config COREUTILS_TAIL
+	bool "tail"
+config COREUTILS_TEE
+	bool "tee"
+config COREUTILS_TEST
+	bool "test"
+config COREUTILS_TIMEOUT
+	bool "timeout"
+config COREUTILS_TOUCH
+	bool "touch"
+config COREUTILS_TR
+	bool "tr"
+config COREUTILS_TRUE
+	bool "true"
+config COREUTILS_TRUNCATE
+	bool "truncate"
+config COREUTILS_TSORT
+	bool "tsort"
+config COREUTILS_TTY
+	bool "tty"
+config COREUTILS_UNAME
+	bool "uname"
+config COREUTILS_UNEXPAND
+	bool "unexpand"
+config COREUTILS_UNIQ
+	bool "uniq"
+config COREUTILS_UNLINK
+	bool "unlink"
+config COREUTILS_UPTIME
+	bool "uptime"
+config COREUTILS_USERS
+	bool "users"
+config COREUTILS_VDIR
+	bool "vdir"
+config COREUTILS_WC
+	bool "wc"
+config COREUTILS_WHO
+	bool "who"
+config COREUTILS_WHOAMI
+	bool "whoami"
+config COREUTILS_YES
+	bool "yes"
+endif
+menuconfig COREUTILS_LIB
+	bool "coreutils_lib"
+if COREUTILS_LIB
+endif
+endif

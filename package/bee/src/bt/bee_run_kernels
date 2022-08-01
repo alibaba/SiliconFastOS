@@ -1,0 +1,153 @@
+#!/bin/bash
+
+CPATH=`pwd`
+MPATH="/sys/kernel/debug/munit"
+
+FILE="${CPATH}/"$(date '+%Y-%m-%d')"_log.txt"
+
+declare -A kernel_cases
+
+result=""
+
+kernel_list()
+{
+	filelist=`ls /sys/kernel/debug/munit`
+	for file in ${filelist}
+	do
+		echo "---------------${file} cases:-------------"
+		subfilelist=`ls /sys/kernel/debug/munit/${file}`
+		for subfile in ${subfilelist}
+		do
+			echo "${subfile}"
+		done
+		echo "------------------end--------------------"
+	done
+}
+
+kernel_list_module()
+{
+	module=$1
+	filelist=`ls /sys/kernel/debug/munit`
+	for file in ${filelist}
+	do
+	if [ "$module" == "$file" ];then
+		subfilelist=`ls /sys/kernel/debug/munit/${file}`
+		for subfile in ${subfilelist}
+		do
+			echo $subfile
+		done
+	fi
+	done
+}
+
+kernel_test_single()
+{
+	cd ${MPATH}/*/$1
+
+	echo 1 > run
+
+	res=`cat res`
+	echo "$1: $res"
+	echo "$1: $res" >> $FILE
+	cd -
+
+	result=$res
+}
+
+kernel_test_module()
+{
+	module=$1
+	local pass=0
+	local fail=0
+
+	cd ${MPATH}/$1
+
+	filelist=`ls`
+	for file in ${filelist}
+	do
+		kernel_test_single $file
+		res=$result
+
+		if [ "$res" == "PASS" ]; then
+			pass=`expr $pass + 1`
+		else
+			fail=`expr $fail + 1`
+		fi
+	done
+
+	echo "Bee Kernel Cases fail: $fail; Cases pass: $pass"
+}
+
+kernel_test_all()
+{
+	local pass=0
+	local fail=0
+	local m_pass=0
+	local m_fail=0
+
+	filelist=`ls /sys/kernel/debug/munit`
+	for file in ${filelist}
+	do
+		m_pass=0
+		m_fail=0
+
+		subfilelist=`ls /sys/kernel/debug/munit/${file}`
+		for subfile in ${subfilelist}
+		do
+			echo 1 > ${MPATH}/${file}/${subfile}/run
+			res=`cat ${MPATH}/${file}/${subfile}/res`
+			if [ "$res" == "PASS" ]; then
+				pass=`expr $pass + 1`
+				m_pass=`expr $m_pass + 1`
+			else
+				fail=`expr $fail + 1`
+				m_fail=`exper $m_fail + 1`
+			fi
+			log=`cat ${MPATH}/${file}/${subfile}/log`
+			echo $log > $FILE
+		done
+		echo "$file $m_pass $m_fail" | tee -a ~/.bee_log
+	done
+
+	echo "Bee Kernel Cases fail: $fail; Cases pass: $pass"
+}
+
+kernel_module=0
+
+case $1 in
+	-a )
+		kernel_test_all
+		exit 0
+		;;
+	-m )
+		kernel_test_module $2
+		exit 0
+		;;
+	-s )
+		oklist=`ls /sys/kernel/debug/munit`
+		for file in ${oklist}
+		do
+			if [ "$module" == "$file" ];then
+				kernel_test_module $2
+				kernel_module=1
+			fi
+		done
+
+		if [ $kernel_module -eq 0 ]; then
+			kernel_test_single $2
+		fi
+		exit 0
+		;;
+	-l )
+		kernel_list_module $2
+		exit 0
+		;;
+	-g )
+		kernel_list
+		exit 0
+		;;
+	* )
+		echo "error cmd for kernel cases!"
+		exit 1
+		;;
+esac

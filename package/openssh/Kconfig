@@ -1,0 +1,32 @@
+menuconfig PACKAGE_OPENSSH
+	bool "openssh"
+if PACKAGE_OPENSSH
+menuconfig OPENSSH_BIN
+	bool "openssh_bin"
+if OPENSSH_BIN
+config OPENSSH_SCP
+	bool "scp"
+config OPENSSH_SFTP
+	bool "sftp"
+config OPENSSH_SSH
+	bool "ssh"
+config OPENSSH_SSH-ADD
+	bool "ssh-add"
+config OPENSSH_SSH-AGENT
+	bool "ssh-agent"
+config OPENSSH_SSH-KEYGEN
+	bool "ssh-keygen"
+config OPENSSH_SSH-KEYSCAN
+	bool "ssh-keyscan"
+endif
+menuconfig OPENSSH_SBIN
+	bool "openssh_sbin"
+if OPENSSH_SBIN
+config OPENSSH_SSHD
+	bool "sshd"
+endif
+menuconfig OPENSSH_LIB
+	bool "openssh_lib"
+if OPENSSH_LIB
+endif
+endif
