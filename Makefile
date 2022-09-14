@@ -22,6 +22,25 @@ SYN_KBUILD = $(TOPDIR)/result/src/kconfig/.stamp_syn_kbuild
 
 export TOPDIR
 
+AS		= $(CROSS_COMPILE)as
+LD		= $(CROSS_COMPILE)ld
+CC		= $(CROSS_COMPILE)gcc
+AR		= $(CROSS_COMPILE)ar
+NM		= $(CROSS_COMPILE)nm
+STRIP		= $(CROSS_COMPILE)strip
+OBJCOPY		= $(CROSS_COMPILE)objcopy
+OBJDUMP		= $(CROSS_COMPILE)objdump
+READELF		= $(CROSS_COMPILE)readelf
+
+ifeq ($(ARCH),riscv)
+QEMU = start-qemu-rv.sh
+else
+QEMU = start-qemu.sh
+endif
+
+export ARCH CROSS_COMPILE LD CC
+export AR NM STRIP OBJCOPY OBJDUMP READELF 
+
 all: kbuild targrt-dir $(SYN_KBUILD)
 
 	make -C package; \
@@ -29,7 +48,8 @@ all: kbuild targrt-dir $(SYN_KBUILD)
 	 		$(TOPDIR)/result/rootfs/libexec \
 			$(TOPDIR)/result/rootfs/man
 	echo y | mkfs.ext4 -d result/rootfs -r 1 -N 0 -m 5 -L "rootfs" -O ^64bit result/qemu/rootfs.ext4 "200M"; \
-	cp scripts/start-qemu.sh result/qemu/
+	cp scripts/$(QEMU) result/qemu/; \
+	cp scripts/bios/* result/qemu/
 
 clean:
 	rm -rf ./result
@@ -107,9 +127,11 @@ vmlinux :
 defconfig :
 	cp configs/defconfig .config
 
+riscv64_defconfig :
+	cp configs/riscv64_defconfig .config
+
 busybox-menuconfig :
 	make -C package/busybox/ busybox-menuconfig
 
 linux-menuconfig :
 	make -C package/linux/ linux-menuconfig
-

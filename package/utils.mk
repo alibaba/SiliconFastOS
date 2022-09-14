@@ -12,7 +12,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-ARCH = aarch64
+RPM_ARCH = aarch64
 ifeq ($(V),1)
 	Q =
 else
@@ -47,12 +47,31 @@ ANOLIS_MIRROR = https://mirrors.openanolis.cn/anolis/8.5/BaseOS/aarch64/os/Packa
 ifeq ($(CONFIG_ANOLIS_PACKAGE_REPO),y)
 $(PKG)_SITE = $(ANOLIS_MIRROR)
 $(PKG)_SOURCE_NAME = $(pkg)-$($(PKG)_VERSION)
-$(PKG)_RPM_SOURCE = $($(PKG)_SOURCE_NAME)*.$(ARCH).rpm
+$(PKG)_RPM_SOURCE = $($(PKG)_SOURCE_NAME)*.$(RPM_ARCH).rpm
 else
 $(PKG)_SOURCE_NAME = $(pkg)-$($(PKG)_VERSION)
 $(PKG)_TAR_SOURCE = $($(PKG)_SOURCE_NAME).tar.xz
 endif
 
+# cross compile
+ifneq (,$(CROSS_COMPILE))
+AUTOMAKE_OPTION = --host $(CROSS_COMPILE:-=)
+endif
+
+UNAME_ARCH=$(shell uname -m)
+ifeq ($(UNAME_ARCH),x86_64)
+ARCH=x86
+else ifeq ($(UNAME_ARCH),aarch64)
+ARCH=arm64
+else
+ARCH=uknow
+endif
+
+ifneq ($(CROSS_COMPILE),)
+MAKE_OPTION = CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH)
+else
+unexport CROSS_COMPILE ARCH
+endif
 ################################################################################
 # make-target -- download package and build target
 ################################################################################

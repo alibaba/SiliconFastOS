@@ -39,11 +39,11 @@ $(PKG)_DOWNLOADS_CMDS := git clone -b devel-5.10 https://gitee.com/anolis/cloud-
 $(PKG)_EXTRACT_CMDS =
 endif
 # $(PKG)_CONFIGURE_CMDS = cp -f $(PACKAGE_DIR)/$(pkg)/$(pkg).config $($(PKG)_SOURCE_DIR)/.config
-$(PKG)_CONFIGURE_CMDS = cd $(@D)/; make defconfig
+$(PKG)_CONFIGURE_CMDS = cd $(@D)/; make $(MAKE_OPTION) defconfig
 # $(PKG)_BUILD_CMDS =
 define $(PKG)_BUILD_CMDS
 	cd $(@D)/; \
-		make -j$(NPROCS)
+		make -j$(NPROCS) $(MAKE_OPTION) 
 endef
 # $(PKG)_INSTALL_CMDS =
 #	cd $$(@D)/$(pkg); \
@@ -51,8 +51,8 @@ endef
 
 define $(PKG)_INSTALL_CMDS
 	cd $(@D)/; \
-		make INSTALL_MOD_PATH=$(SOURCE_DIR) modules_install; \
-		cp arch/arm64/boot/Image $(TARGET_DIR)/qemu/
+		make $(MAKE_OPTION) INSTALL_MOD_PATH=$(SOURCE_DIR) modules_install; \
+		cp arch/$(ARCH)/boot/Image $(TARGET_DIR)/qemu/
 
 
 
@@ -62,13 +62,13 @@ include ../help.mk
 kconfig :
 
 linux-menuconfig : $($(PKG)_TARGET_EXTRACT)
-	cd $($(PKG)_SOURCE_DIR); make menuconfig
+	cd $($(PKG)_SOURCE_DIR); make $(MAKE_OPTION) menuconfig
 
 vmlinux :
 	cp -rf $(TARGET_DIR)/rootfs/ $($(PKG)_SOURCE_DIR)/usr/ && \
 	sed -i 's/^CONFIG_INITRAMFS_SOURCE=\"\"$$/CONFIG_INITRAMFS_SOURCE=\"usr\/rootfs\"/g' $($(PKG)_SOURCE_DIR)/.config && \
 	cd $($(PKG)_SOURCE_DIR) && \
-	make -j$(NPROCS) && \
+	make -j$(NPROCS) $(MAKE_OPTION) && \
 	cp  vmlinux $(TARGET_DIR)/vmlinux_include_rootfs && \
 	sed -i 's/^CONFIG_INITRAMFS_SOURCE=\"usr\/rootfs\"$$/CONFIG_INITRAMFS_SOURCE=\"\"/g' $($(PKG)_SOURCE_DIR)/.config
 

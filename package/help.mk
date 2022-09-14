@@ -47,7 +47,7 @@ else
 CLEAN_CMD = make -C $($(PKG)_SOURCE_DIR) clean;\
 		rm -rf $($(PKG)_SOURCE_DIR)/.stamp_built* \
 			$($(PKG)_SOURCE_DIRi)/.stamp_configured* \
-			$($(PKG)_SOURCE_DIRi)/.stamp_installed*
+			$($(PKG)_SOURCE_DIRi)/.stamp_installed*;
 endif
 clean:
 	if [ $(pkg) == bee ]; then \
@@ -89,6 +89,7 @@ $(TARGET_DIR)/src/%/.stamp_installed.$(STAMP_SUFFIX):
 	$(Q)$($(PKG)_INSTALL_CMDS)
 	$(Q)touch $@
 
+
 ifeq (,$(filter busybox dropbear linux,$(pkg)))
 PKG_FILTER = y
 endif
@@ -96,7 +97,7 @@ ifeq ($(CONFIG_ANOLIS_PACKAGE_REPO)$(PKG_FILTER),yy)
 $(PKG)_DOWNLOADS_CMDS = [ $(pkg) = bee ] || \
 							[ -e $($(PKG)_SOURCE_DL_DIR)/$($(PKG)_RPM_SOURCE) ] || wget -P $($(PKG)_SOURCE_DL_DIR) -r -nd -np -nH --reject=html -A "$($(PKG)_RPM_SOURCE)" $(ANOLIS_MIRROR);\
 							for i in $($(PKG)_RPM_SET);do \
-								[ -e $($(PKG)_SOURCE_DL_DIR)/$$i ] || wget -P $($(PKG)_SOURCE_DL_DIR) -r -nd -np -nH --reject=html -A "$$i*.$(ARCH).rpm" $(ANOLIS_MIRROR);\
+								[ -e $($(PKG)_SOURCE_DL_DIR)/$$i ] || wget -P $($(PKG)_SOURCE_DL_DIR) -r -nd -np -nH --reject=html -A "$$i*.$(RPM_ARCH).rpm" $(ANOLIS_MIRROR);\
 							done;
 $(PKG)_EXTRACT_CMDS =
 $(PKG)_CONFIGURE_CMDS =
@@ -104,11 +105,11 @@ $(PKG)_BUILD_CMDS =
 $(PKG)_INSTALL_CMDS = mkdir -p $($(PKG)_SOURCE_DIR)/$(BUILD_DIR) ;cd $($(PKG)_SOURCE_DIR)/$(BUILD_DIR) ; \
 						rpm2cpio $($(PKG)_SOURCE_DL_DIR)/$($(PKG)_RPM_SOURCE) | cpio -idmv; \
 						for i in $($(PKG)_RPM_SET);do \
-							rpm2cpio $($(PKG)_SOURCE_DL_DIR)/$$i*.$(ARCH).rpm | cpio -idmv; \
+							rpm2cpio $($(PKG)_SOURCE_DL_DIR)/$$i*.$(RPM_ARCH).rpm | cpio -idmv; \
 						done; \
 						$($(PKG)_INSTALL_TARGET_CMDS)
 else
-$(PKG)_DOWNLOADS_CMDS ?= [ $(pkg) = bee ] || [ -e $($(PKG)_SOURCE_DL_DIR)/$($(PKG)_TAR_SOURCE) ] || wget -P $($(PKG)_SOURCE_DL_DIR) $($(PKG)_SITE)/$($(PKG)_TAR_SOURCE)
+$(PKG)_DOWNLOADS_CMDS ?= [ $(pkg) = bee ] || [ -e $($(PKG)_SOURCE_DL_DIR)/$($(PKG)_TAR_SOURCE) ] || wget --no-check-certificate -P $($(PKG)_SOURCE_DL_DIR) $($(PKG)_SITE)/$($(PKG)_TAR_SOURCE)
 $(PKG)_EXTRACT_CMDS ?= tar -xf $($(PKG)_SOURCE_DL_DIR)/$($(PKG)_TAR_SOURCE) -C $(SOURCE_DIR)
 $(PKG)_CONFIGURE_CMDS ?= \
 	cd $($(PKG)_SOURCE_DIR) && rm -rf config.cache && \
@@ -117,6 +118,7 @@ $(PKG)_CONFIGURE_CMDS ?= \
 		--sysconfdir=$(ROOTFS_DIR)/etc/$(pkg) \
 		CFLAGS='$(MY_CFLAGS) $($(PKG)_CFLAGS)' \
 		LDFLAGS='$(MY_LDFLAGS)' \
+		$(AUTOMAKE_OPTION)	\
 		$($(PKG)_CONF)
 
 $(PKG)_BUILD_CMDS ?= cd $($(PKG)_SOURCE_DIR) ;\

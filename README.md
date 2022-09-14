@@ -79,6 +79,14 @@ You will get a new directory named result in root directory, ./result has three 
 
 SifastOS can build and install Bee automatically, you just need to choose bee in menuconfig, if you want to build Bee individually, please see [there](docs/bee.md)
 
+### Support Arch
+
+#### ARM
+make defconfig;make
+
+#### RISCV Cross Compile
+make riscv64_defconfig;make CROSS_COMPILE=riscv64-unknown-linux-gnu- ARCH=riscv
+
 ## Licensing
 
 [GPL-2.0 license](COPYING)

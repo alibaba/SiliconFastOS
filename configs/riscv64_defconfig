@@ -1,0 +1,106 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# SifastOS Configuration
+#
+# CONFIG_ANOLIS_PACKAGE_REPO is not set
+CONFIG_OPENSOURCE_PACKAGE_REPO=y
+
+#
+# Share Library
+#
+# CONFIG_PACKAGE_ACL is not set
+# CONFIG_PACKAGE_ATTR is not set
+# CONFIG_PACKAGE_GLIBC is not set
+# CONFIG_PACKAGE_LIBCAP is not set
+# CONFIG_PACKAGE_PCRE is not set
+# CONFIG_PACKAGE_PCRE2 is not set
+# CONFIG_PACKAGE_LIBSELINUX is not set
+# CONFIG_PACKAGE_LIBBPF is not set
+# CONFIG_PACKAGE_ELFUTILS is not set
+# CONFIG_PACKAGE_LIBMNL is not set
+# CONFIG_PACKAGE_ZLIB is not set
+# end of Share Library
+
+#
+# Archival Utilities
+#
+CONFIG_PACKAGE_BUSYBOX=y
+# CONFIG_BUSYBOX_BIN is not set
+# CONFIG_BUSYBOX_SBIN is not set
+# CONFIG_BUSYBOX_LIB is not set
+CONFIG_PACKAGE_LINUX=y
+# CONFIG_LINUX_BIN is not set
+# CONFIG_LINUX_SBIN is not set
+# CONFIG_LINUX_LIB is not set
+# end of Archival Utilities
+
+#
+# Coreutils
+#
+# CONFIG_PACKAGE_COREUTILS is not set
+# end of Coreutils
+
+#
+# Console Utilities
+#
+# CONFIG_PACKAGE_NCURSES is not set
+# end of Console Utilities
+
+#
+# Finding Utilities
+#
+# CONFIG_PACKAGE_FINDUTILS is not set
+# end of Finding Utilities
+
+#
+# Init Utilities
+#
+
+#
+# Login/Password Management Utilities
+#
+# CONFIG_PACKAGE_OPENSSH is not set
+# CONFIG_PACKAGE_DROPBEAR is not set
+# end of Login/Password Management Utilities
+
+#
+# Linux Module Utilities
+#
+# CONFIG_PACKAGE_KMOD is not set
+# end of Linux Module Utilities
+
+#
+# Linux System Utilities
+#
+# CONFIG_PACKAGE_PCIUTILS is not set
+# CONFIG_PACKAGE_UTIL-LINUX is not set
+# end of Linux System Utilities
+
+#
+# Miscellaneous Utilities
+#
+
+#
+# Networking Utilities
+#
+# CONFIG_PACKAGE_NET-TOOLS is not set
+# CONFIG_PACKAGE_IPROUTE2 is not set
+# CONFIG_PACKAGE_IPROUTE is not set
+# CONFIG_PACKAGE_IPUTILS is not set
+# end of Networking Utilities
+
+#
+# Shells
+#
+# CONFIG_PACKAGE_BASH is not set
+# end of Shells
+
+#
+# System Logging Utilities
+#
+
+#
+# Silicon Validation framework and test suite
+#
+# CONFIG_PACKAGE_BEE is not set
+# end of Silicon Validation framework and test suite
