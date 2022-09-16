@@ -4,7 +4,7 @@ You can open issues for bugs you've found or features you think are missing. You
 You can contribute in the following ways:
 
 - Finding and reporting bugs
-- Contributing code to SifastOS by fixing bugs or implementing features
+- Contributing code to SiliconFastOS by fixing bugs or implementing features
 - Improving the documentation
 
 ## Submit a patch

@@ -7,7 +7,7 @@ USER="`id -un`"
 export USER
 
 #set hostname
-HOSTNAME='SifastOS'
+HOSTNAME='SiliconFastOS'
 export HOSTNAME
 
 HOME=/root

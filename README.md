@@ -1,12 +1,12 @@
-# SifastOS: An Operating System for Silicon Validation
+# SiliconFastOS: An Operating System for Silicon Validation
 
 ## Introduction
 
-SifastOS is an operating system for OS-based silicon validation, which is small, fast, flexible in configuration, and has rich cmdlines. SifastOS can improve your development efficiency in silicon validation, ensuring the delivery of high-quality silicon.
+SiliconFastOS is an operating system for OS-based silicon validation, which is small, fast, flexible in configuration, and has rich cmdlines. SiliconFastOS can improve your development efficiency in silicon validation, ensuring the delivery of high-quality silicon.
 
-SifastOS contains a small build system, you just need to add a small number of configurations, so you can build a specific silicon validation platform easily.
+SiliconFastOS contains a small build system, you just need to add a small number of configurations, so you can build a specific silicon validation platform easily.
 
-SifastOS supports OpenAnolis kernel and Upstream kernel, and we use it as the silicon validation operating system in the development of ARMv9 server chip.
+SiliconFastOS supports OpenAnolis kernel and Upstream kernel, and we use it as the silicon validation operating system in the development of ARMv9 server chip.
 
 ## What is OS for silicon validation
 
@@ -16,7 +16,7 @@ As hardware manufacturers are adding more new features, including new instructio
 
 During pre-silicon validation, the developer needs to test for BIOS/UEFI, firmware, device drivers, operating system boot and diagnostics tools, sometimes even need to optimize the entire software stack for a specific middleware framework, workload, and application. All these processes need to run an operating system on virtual platforms (often FPGA-based hardware emulators).
 
-There are more information in [Why SifastOS](docs/why_SifastOS.md)
+There are more information in [Why SiliconFastOS](docs/why_SiliconFastOS.md)
 
 ## Feature
 
@@ -30,32 +30,32 @@ There are more information in [Why SifastOS](docs/why_SifastOS.md)
 
 - **More commands and more command options than busybox** and easy to install:
 
-    SifastOS uses command-line tools provided by open-source packages, avoiding the problem of using busybox commands that are not rich enough.
+    SiliconFastOS uses command-line tools provided by open-source packages, avoiding the problem of using busybox commands that are not rich enough.
 - Customize the userspace toolset as needed to control the size of the rootfs:
 
-    SifastOS uses kbuild to configure userspace tools, and developers can not only select the packages built into SifastOS but even individual commands.
+    SiliconFastOS uses kbuild to configure userspace tools, and developers can not only select the packages built into SiliconFastOS but even individual commands.
 
     <img src=docs/interface.png width="50%">
 
-- Default config to build your SifastOS quickly:
+- Default config to build your SiliconFastOS quickly:
 
-    SifastOS provides some default configurations in config/ to help developers build SifastOS quickly. It contains the smallest collection of command-line tools needed for silicon validation.
+    SiliconFastOS provides some default configurations in config/ to help developers build SiliconFastOS quickly. It contains the smallest collection of command-line tools needed for silicon validation.
 
 ### OS boot time speedup
 
 - Use SystemV instead of Systemd and simplify SystemV boot scripts to reduce OS boot time.
 - Minimizes necessary command support:
 
-    Silicon validation requires rich command-line tool support, but too many command-line tools will make the rootfs too large. SifastOS has a minimal set of command-line tools for silicon validation to balance command-line tools with file size.
+    Silicon validation requires rich command-line tool support, but too many command-line tools will make the rootfs too large. SiliconFastOS has a minimal set of command-line tools for silicon validation to balance command-line tools with file size.
 - Minimal kernel driver support（Developing）:
 
-    SifastOS removes some kernel modules that will not be used during the silicon validation and reserves key drivers such as ACPI, Smmu, PCIe, etc to reduce kernel boot time.
+    SiliconFastOS removes some kernel modules that will not be used during the silicon validation and reserves key drivers such as ACPI, Smmu, PCIe, etc to reduce kernel boot time.
 - PCIe init delay（Developing）:
 
     Initialize PCIe driver after Linux Shell terminal starts instead of in the kernel. Reduces the time required for waiting for the kernel to boot.
 - Minimize share library:
 
-    The size of the shared lib libraries also accounts for a large portion of the rootfs, and SifastOS provides only the lib libraries required by its command-line tools. This is used to control the size of the rootfs.
+    The size of the shared lib libraries also accounts for a large portion of the rootfs, and SiliconFastOS provides only the lib libraries required by its command-line tools. This is used to control the size of the rootfs.
 
 ### More tools for chip test and validation (Planning)
 
@@ -64,7 +64,7 @@ There are more information in [Why SifastOS](docs/why_SifastOS.md)
 
 ## Quick Start
 
-You can use 'make menuconfig' to config your SifastOS, then use 'make' to build.
+You can use 'make menuconfig' to config your SiliconFastOS, then use 'make' to build.
 
 You will get a new directory named result in root directory, ./result has three subdirectory
 
@@ -73,11 +73,11 @@ You will get a new directory named result in root directory, ./result has three 
     ├── rootfs
     └── src
 
-./src storage the source code. ./rootfs storage a rootfs used by SifastOS. ./qemu storage a rootfs image and a kernel image, you can run start_qemu.sh to run SifastOS with qemu, then you can see
+./src storage the source code. ./rootfs storage a rootfs used by SiliconFastOS. ./qemu storage a rootfs image and a kernel image, you can run start_qemu.sh to run SiliconFastOS with qemu, then you can see
 
-<img src=docs/SifastOS_logo.jpg>
+<img src=docs/SiliconFastOS_logo.png>
 
-SifastOS can build and install Bee automatically, you just need to choose bee in menuconfig, if you want to build Bee individually, please see [there](docs/bee.md)
+SiliconFastOS can build and install Bee automatically, you just need to choose bee in menuconfig, if you want to build Bee individually, please see [there](docs/bee.md)
 
 ### Support Arch
 
@@ -103,9 +103,9 @@ The version number of the project is in the form of x.x.x, where x is a number.
 
 ## Roadmap
 
-We will introduce some features for kernel boot speed up and more silicon validation tools in SifastOS 1.0.0.
+We will introduce some features for kernel boot speed up and more silicon validation tools in SiliconFastOS 1.0.0.
 
-Then, we plan to support silicon validation for RISC-V server chip in SifastOS 2.0.0. If you are also a developer for OS-based silicon validation, we are glad you contact us and develop SifastOS together.
+Then, we plan to support silicon validation for RISC-V server chip in SiliconFastOS 2.0.0. If you are also a developer for OS-based silicon validation, we are glad you contact us and develop SiliconFastOS together.
 
 ## Maintainer
 

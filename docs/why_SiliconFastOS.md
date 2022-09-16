@@ -7,13 +7,17 @@
 
 ## Differences in silicon validation between hardware firmware and OS
 
-|           | Hardware | Firmware |  OS |
-|  ----     | ----     |  ----    | --- |
-| HW features  |    yes   |  yes | yes|
-| Flexibility |    limited    |  limited   |good|
-| Interaction of software and hardware |   no    |  limited   |more|
-| Similarity to real business environment |    no    |  no |yes|
-| Ecosystem (Software and developers) |    limited    |  limited   |rich|
+|                                   | Hardware | Firmware |  OS |
+|  ----                             | ----     |  ----    | --- |
+| HW/SW co-design                   | &#10006; |  &#10006; | &#10004; |
+| Flexibility                       | &#10006; |  &#10006; | &#10004; |
+| Mutli-IP co-design                |   kit    |  IP       | Unit     |
+| Similarity to real e2e environment| &#10006; |  &#10006; | &#10004; |
+| Ecosystem                         | &#10006; |  &#10006; | &#10004; |
+| Chip Simulation                   | &#10004; |  &#10006; | &#10006; |
+| Chip debug                        | &#10004; |  &#10006; | &#10006; |
+| HW/FW Interaction                 | &#10006; |  &#10004; | &#10006; |
+| Firmware Debug                    | &#10006; |  &#10004; | &#10006; |
 
 ## Why we need a new OS for silicon validation
 
@@ -27,34 +31,19 @@ We also need some frameworks and debug tools to speed up pre-silicon silicon val
 
 In summary, we need a new OS for silicon validation that is small, fast, and easy to customize.
 
-## Difference between SifastOS and busbox buildroot
+## Difference between SiliconFastOS and busbox buildroot
 
 Both Busybox and Buildroot are designed for embedded scenarios, and can't completely cover silicon validation scenarios.
 
 In addition to this, silicon validation and embedded development have different requirements for OS. The Embedded system has simpler hardware. But the hardware for silicon validation is more complex and will change during the different stages frequently. Therefore, embedded development and silicon validation are two different domains, and software developed for embedded scenarios cannot be well applied in the silicon validation domain.
 
-### Busybox
+SiliconFastOS provides richer command-line tools and a proprietary testing framework
 
-SifastOS provides richer command-line tools and a proprietary testing framework
+|               | Busybox | BuildRoot etc | SiliconFastOS |
+|  ----         | ----    |  ----  | --- |
+| OS speed up   | &#10004; | &#10006;  | &#10004; |
+| Rich cmd      | &#10006;     | &#10004; | &#10004; |
+| Native env    | &#10006;    | &#10006; | &#10004; |
+| Flexibility   | &#10006;     | &#10004; | &#10004; |
+| Out of box    | &#10006; | &#10004;| &#10004; |
 
-|           | Busybox | SifastOS |
-|  ----     | ----    |  ----  |
-| Format    | filesystem | OS  |
-| Size      | *M      | *0M |
-| CMD       | limited    | rich |
-| Flexibility| low     | high |
-| Maintainability | low | high|
-
-### Buildroot
-
-Buildroot is a simple and flexible build system for OS, but it targets more general usage scenarios, while SifastOS wants to focus on silicon validation, so SifastOS add more cmdline and toolsets for silicon validation.
-
-|           | Buildroot | SifastOS |
-|  ----     | ----    |  ----  |
-| Format    | OS      |   OS   |
-| Size      | *0M     |   *0M  |
-| CMD       | rich    | rich. more for validation |
-| Flexibility| high     | high |
-| Maintainability | high | high|
-| Kernel speed up | no | yes |
-| Originally designed for debug | no | yes |

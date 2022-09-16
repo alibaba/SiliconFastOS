@@ -2,7 +2,7 @@
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "SifastOS Configuration"
+mainmenu "SiliconFastOS Configuration"
 
 choice
     prompt "SoftWare Repo"
