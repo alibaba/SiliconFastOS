@@ -32,8 +32,9 @@ $(PKG)_SOURCE_DIR = $(SOURCE_DIR)/$($(PKG)_SOURCE_NAME)
 # $(PKG)_DOWNLOADS_CMDS =
 # $(PKG)_EXTRACT_CMDS =
 # $(PKG)_CONFIGURE_CMDS =
-# $(PKG)_BUILD_CMDS =
-# $(PKG)_INSTALL_CMDS =
+$(PKG)_BUILD_CMDS = cd $($(PKG)_SOURCE_DIR); make -j$(NPROCS) PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
+$(PKG)_INSTALL_CMDS = cd $($(PKG)_SOURCE_DIR) ;\
+						make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" install 2> /dev/null; $($(PKG)_INSTALL_TARGET_CMDS)
 
 include ../help.mk
 
