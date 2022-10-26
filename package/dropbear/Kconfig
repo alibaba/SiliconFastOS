@@ -10,6 +10,8 @@ config DROPBEAR_DROPBEARCONVERT
 	bool "dropbearconvert"
 config DROPBEAR_DROPBEARKEY
 	bool "dropbearkey"
+config DROPBEAR_SCP
+	bool "scp"
 endif
 menuconfig DROPBEAR_SBIN
 	bool "dropbear_sbin"
