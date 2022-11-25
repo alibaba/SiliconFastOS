@@ -1,0 +1,167 @@
+#!/usr/bin/python3
+import dnf
+import os
+import argparse
+from pathlib import Path
+import lddwrap
+
+BASE_FILE = {
+    'usr'       : {'mode' : 755},
+    'usr/bin'   : {'mode' : 755, 'symlink_to' : "bin"},
+    'usr/sbin'  : {'mode' : 755, 'symlink_to' : "sbin"},
+    'usr/lib'   : {'mode' : 755, 'symlink_to' : "lib"},
+    'usr/lib64' : {'mode' : 755, 'symlink_to' : "lib64"},
+    'boot'      : {'mode' : 755},
+    'dev'       : {'mode' : 755},
+    'proc'      : {'mode' : 755},
+    'sys'       : {'mode' : 755},
+    'tmp'       : {'mode' : 755},
+    'mnt'       : {'mode' : 755},
+    'root'      : {'mode' : 755},
+    'home'      : {'mode' : 755},
+    'etc'       : {'mode' : 755},
+    'var'       : {'mode' : 755},
+}
+
+def get_release():
+    f = open("/etc/os-release", "r")
+    lines = f.readlines()
+    for line in lines:
+        if line.startswith("VERSION_ID"):
+            return line.split("\"")[1]
+
+def filesystem(dest) :
+    tag = Path(os.path.join(dest, ".filesystem"))
+    if tag.is_file():
+        return
+    else:
+        tag.touch()
+
+    for dir, attr in BASE_FILE.items():
+        path_obj = Path(os.path.join(dest, dir))
+        path_obj.mkdir(parents=True, exist_ok=True)
+        if 'symlink_to' in attr.keys():
+            try:
+                Path(os.path.join(dest, attr['symlink_to'])).symlink_to(dir)
+            except FileExistsError:
+                continue
+            except Exception as ex:
+                print(" Unkown err when creat symlink")
+
+def strip(dest):
+    unstrip = 0
+    strip = 0
+    for root, dirs, files in os.walk(dest):
+        for file in files:
+            full_path = os.path.join(root, file)
+            unstrip += os.path.getsize(full_path)
+            os.system('strip -s {}'.format(full_path))
+            print("strip {}".format(full_path))
+            strip += os.path.getsize(full_path)
+    # print("strip all cmd here, {} to {}".format(unstrip, strip))
+
+def provides(base, provides_spec):
+    binary_provides = [prefix + provides_spec
+                            for prefix in ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/']]
+
+    for cmd_path in binary_provides:
+        providers = base.sack.query().filterm(file__glob=cmd_path)
+        if providers.count():
+            return providers, cmd_path
+
+def provides_filter(pkgs):
+    for pkg in pkgs:
+        if pkg.reponame != '@System':
+            print("Chose pkg named {}-{}.{}".format(pkg.name, pkg.evr, pkg.arch))
+            return pkg.name
+
+def find_deps(cmd, workspace):
+    results = [cmd]
+    src_cmd_path = Path(workspace + cmd)
+    deps = []
+    try:
+        deps = lddwrap.list_dependencies(path=src_cmd_path)
+    except RuntimeError:
+        deps = []
+        print("{} is static cmd".format(cmd))
+    for dep in deps:
+        if not dep.path:
+            continue
+        dep_path = dep.path._str
+        results.append(dep_path)
+        src_dep_path = workspace + dep_path
+
+        if os.path.islink(src_dep_path):
+            link_path = os.readlink(src_dep_path)
+            dep_dir = os.path.dirname(dep_path)
+            src_link_path = os.path.join(dep_dir, link_path)
+
+            results.append(src_link_path)
+        results.extend(find_deps(dep_path, workspace))
+
+    return list(set(results))
+
+def install(cmds, src, dest):
+    for cmd in cmds:
+        full_cmd = src + cmd
+        cmd_dir = os.path.dirname(cmd)
+        dest_dir = dest + cmd_dir
+
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+        os.system("cp -dn {} {}".format(full_cmd, dest_dir))
+
+
+
+def extract_rpm(pkg_name, full_cmd, dest):
+    workspace = os.getcwd()+ "/workspace"
+
+    os.system("dnf install -y --installroot={} --releasever={} {} > /dev/null".format(workspace, get_release(), pkg_name))
+
+    cmds = find_deps(full_cmd, workspace)
+    install(cmds, workspace, dest)
+    os.system("rm -rf {}".format(workspace))
+
+def add(cmds, dest):
+    filesystem(dest)
+
+    base = dnf.Base()
+    base.read_all_repos()
+    base.fill_sack()
+    for repo in base.repos.keys():
+        print("Repo %s" % repo)
+
+    for cmd in cmds:
+        q, full_cmd = provides(base, cmd)
+        pkgs = q.run()
+        pkg_name = provides_filter(pkgs)
+        extract_rpm(pkg_name, full_cmd, dest)
+
+    strip(dest)
+
+def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('add')
+    parser.add_argument('-d', '--dest', help='set install root')
+    parser.add_argument('cmds', nargs='+')
+    args = parser.parse_args()
+
+    # parse flag
+    if not args.cmds:
+        print("please input cmd name")
+
+    if args.dest:
+        if args.dest.startswith('/'):
+            dest = args.dest
+        else:
+            dest = os.path.join(os.getcwd(), args.dest)
+    else:
+        print("Need to specify dest")
+
+    if args.add:
+        add(args.cmds, dest)
+
+if __name__ == "__main__":
+    main()
+
