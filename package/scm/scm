@@ -35,7 +35,7 @@ def filesystem(dest) :
     if tag.is_file():
         return
     else:
-        tag.touch()
+        os.system("touch {}".format(dest + "/.filesystem"))
 
     for dir, attr in BASE_FILE.items():
         path_obj = Path(os.path.join(dest, dir))
