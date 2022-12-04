@@ -132,6 +132,8 @@ def add(cmds, dest):
         print("Repo %s" % repo)
 
     for cmd in cmds:
+        if cmd == "filesystem":
+            continue
         q, full_cmd = provides(base, cmd)
         pkgs = q.run()
         pkg_name = provides_filter(pkgs)
