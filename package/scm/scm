@@ -55,14 +55,19 @@ def strip(dest):
         for file in files:
             full_path = os.path.join(root, file)
             unstrip += os.path.getsize(full_path)
-            os.system('strip -s {}'.format(full_path))
-            print("strip {}".format(full_path))
+            os.system('strip -s {} > /dev/null'.format(full_path))
+            print("{:8} Strip {}".format("[STRIP]",full_path))
             strip += os.path.getsize(full_path)
     # print("strip all cmd here, {} to {}".format(unstrip, strip))
 
 def provides(base, provides_spec):
-    binary_provides = [prefix + provides_spec
-                            for prefix in ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/']]
+    binary_provides = []
+
+    if provides_spec.startswith('/'):
+        binary_provides.append(provides_spec)
+    else:
+        binary_provides = [prefix + provides_spec
+                            for prefix in ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/lib64/', '/usr/lib64/']]
 
     for cmd_path in binary_provides:
         providers = base.sack.query().filterm(file__glob=cmd_path)
@@ -72,13 +77,26 @@ def provides(base, provides_spec):
 def provides_filter(pkgs):
     for pkg in pkgs:
         if pkg.reponame != '@System':
-            print("Chose pkg named {}-{}.{}".format(pkg.name, pkg.evr, pkg.arch))
+            print("{:6} Chose pkg named {}-{}.{}".format("[PKG]", pkg.name, pkg.evr, pkg.arch))
             return pkg.name
 
-def find_deps(cmd, workspace):
+def find_deps(cmds, workspace):
+    res = []
+    for cmd in cmds:
+        res.extend(find_dep(cmd, workspace))
+    return list(set(res))
+
+def find_dep(cmd, workspace):
     results = [cmd]
     src_cmd_path = Path(workspace + cmd)
     deps = []
+
+    if os.path.islink(src_cmd_path):
+        link_path = os.readlink(src_cmd_path)
+        link_dir = os.path.dirname(cmd)
+        full_link_path = os.path.abspath(os.path.join(link_dir, link_path))
+        results.append(full_link_path)
+
     try:
         deps = lddwrap.list_dependencies(path=src_cmd_path)
     except RuntimeError:
@@ -94,10 +112,10 @@ def find_deps(cmd, workspace):
         if os.path.islink(src_dep_path):
             link_path = os.readlink(src_dep_path)
             dep_dir = os.path.dirname(dep_path)
-            src_link_path = os.path.join(dep_dir, link_path)
+            src_link_path = os.path.abspath(os.path.join(dep_dir, link_path))
 
             results.append(src_link_path)
-        results.extend(find_deps(dep_path, workspace))
+        results.extend(find_dep(dep_path, workspace))
 
     return list(set(results))
 
@@ -110,15 +128,18 @@ def install(cmds, src, dest):
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
         os.system("cp -dn {} {}".format(full_cmd, dest_dir))
+        print("{:9} Install {} to {}".format("[INSTALL]", full_cmd, dest_dir))
 
 
 
-def extract_rpm(pkg_name, full_cmd, dest):
+
+def extract_rpm(pkg_names, full_cmds, dest):
     workspace = os.getcwd()+ "/workspace"
+    pkg_str = ' '.join(pkg_names)
 
-    os.system("dnf install -y --installroot={} --releasever={} {} > /dev/null".format(workspace, get_release(), pkg_name))
+    os.system("dnf install -y --installroot={} --releasever={} {} > /dev/null".format(workspace, get_release(), pkg_str))
 
-    cmds = find_deps(full_cmd, workspace)
+    cmds = find_deps(full_cmds, workspace)
     install(cmds, workspace, dest)
     os.system("rm -rf {}".format(workspace))
 
@@ -129,15 +150,19 @@ def add(cmds, dest):
     base.read_all_repos()
     base.fill_sack()
     for repo in base.repos.keys():
-        print("Repo %s" % repo)
+        print("{:6} Repo {}".format("[REPO]", repo))
 
+    pkg_names, full_cmds = [], []
     for cmd in cmds:
         if cmd == "filesystem":
             continue
         q, full_cmd = provides(base, cmd)
         pkgs = q.run()
         pkg_name = provides_filter(pkgs)
-        extract_rpm(pkg_name, full_cmd, dest)
+        pkg_names.append(pkg_name)
+        full_cmds.append(full_cmd)
+
+    extract_rpm(pkg_names, full_cmds, dest)
 
     strip(dest)
 
