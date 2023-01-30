@@ -137,7 +137,8 @@ def extract_rpm(pkg_names, full_cmds, dest):
     workspace = os.getcwd()+ "/workspace"
     pkg_str = ' '.join(pkg_names)
 
-    os.system("dnf install -y --installroot={} --releasever={} {} > /dev/null".format(workspace, get_release(), pkg_str))
+    os.system("dnf install -y {} > /dev/null".format(pkg_str))
+    os.system("dnf install -y --installroot={} --releasever={} {}".format(workspace, get_release(), pkg_str))
 
     cmds = find_deps(full_cmds, workspace)
     install(cmds, workspace, dest)
