@@ -11,6 +11,7 @@ BASE_FILE = {
     'usr/sbin'  : {'mode' : 755, 'symlink_to' : "sbin"},
     'usr/lib'   : {'mode' : 755, 'symlink_to' : "lib"},
     'usr/lib64' : {'mode' : 755, 'symlink_to' : "lib64"},
+    'usr/local/bin' : {'mode' : 755},
     'boot'      : {'mode' : 755},
     'dev'       : {'mode' : 755},
     'proc'      : {'mode' : 755},
@@ -67,7 +68,7 @@ def provides(base, provides_spec):
         binary_provides.append(provides_spec)
     else:
         binary_provides = [prefix + provides_spec
-                            for prefix in ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/lib64/', '/usr/lib64/']]
+                            for prefix in ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/lib64/', '/usr/lib64/', '/lib/', '/usr/lib/']]
 
     for cmd_path in binary_provides:
         providers = base.sack.query().filterm(file__glob=cmd_path)
@@ -144,7 +145,52 @@ def extract_rpm(pkg_names, full_cmds, dest):
     install(cmds, workspace, dest)
     os.system("rm -rf {}".format(workspace))
 
-def add(cmds, dest):
+def just_install_deps(cmd, dest):
+    workspace = os.getcwd()+ "/workspace"
+
+    full_cmd = "/usr/local/bin/" + cmd
+    os.system("mkdir -p {}".format(workspace + "/usr/local/bin/"))
+    os.system("cp {} {}".format(cmd, workspace + full_cmd))
+
+    src_cmd_path = Path(workspace + full_cmd)
+    deps = []
+    try:
+        deps = lddwrap.list_dependencies(path=src_cmd_path)
+    except RuntimeError:
+        deps = []
+        print("{} is static cmd".format(cmd))
+
+    new_deps=[]
+    for dep in deps:
+        if not dep.path:
+           continue
+        new_deps.append(os.path.basename(dep.path._str))
+
+
+    add(dest, new_deps)
+    os.system("cp {} {}".format(cmd, dest + full_cmd))
+
+def check_path(path):
+    dest=""
+    if path:
+        if path.startswith('/'):
+            dest = path
+        else:
+            dest = os.path.join(os.getcwd(), path)
+    else:
+        print("Need to specify dest")
+        exit(1)
+    return dest
+
+def link(dest, cmds):
+    for cmd in cmds:
+        if cmd == "filesystem":
+            continue
+        just_install_deps(cmd, dest)
+
+    strip(dest)
+
+def add(dest, cmds):
     filesystem(dest)
 
     base = dnf.Base()
@@ -167,10 +213,12 @@ def add(cmds, dest):
 
     strip(dest)
 
+
+
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('add')
+    parser.add_argument('subcmd')
     parser.add_argument('-d', '--dest', help='set install root')
     parser.add_argument('cmds', nargs='+')
     args = parser.parse_args()
@@ -187,9 +235,12 @@ def main():
     else:
         print("Need to specify dest")
 
-    if args.add:
-        add(args.cmds, dest)
+    if args.subcmd == "add":
+        add(args.dest, args.cmds)
+    elif args.subcmd == "link":
+        link(args.dest, args.cmds)
+    else:
+        print("unkown subcmd")
 
 if __name__ == "__main__":
     main()
-
