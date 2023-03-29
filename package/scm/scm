@@ -139,6 +139,7 @@ def extract_rpm(pkg_names, full_cmds, dest):
     pkg_str = ' '.join(pkg_names)
 
     os.system("dnf install -y {} > /dev/null".format(pkg_str))
+    os.system("dnf install -y --installroot={} --releasever={} bash".format(workspace, get_release()))
     os.system("dnf install -y --installroot={} --releasever={} {}".format(workspace, get_release(), pkg_str))
 
     cmds = find_deps(full_cmds, workspace)
