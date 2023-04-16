@@ -203,7 +203,7 @@ def add(dest, cmds):
     pkg_names, full_cmds = [], []
     for cmd in cmds:
         if cmd == "filesystem":
-            continue
+            return
         q, full_cmd = provides(base, cmd)
         pkgs = q.run()
         pkg_name = provides_filter(pkgs)
