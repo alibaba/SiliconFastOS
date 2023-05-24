@@ -1,0 +1,6 @@
+*-cmdline
+*-kernel
+*-initrd.img
+*-state
+.vscode
+.linuxkit

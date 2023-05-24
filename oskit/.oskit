@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import sys
+import os
+import platform
+import re
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+arch = "x86" if platform.machine() == "x86_64" else "arm64"
+PKG_PATH = "./pkgs"
+KERNEL_PATH = "./linux"
+DOCKERHUB = "reg.docker.alibaba-inc.com/silicon_fast"
+IMAGE_MAP = {"memory-model" : "herd7:7.56.1",
+                "kernel" : "kdevel:latest"}
+DEBUG=False
+MOBY=os.system("[ -n \"$(rpm -qa moby)\" ]") == 0
+DOCKER_BUILD="docker build"
+if MOBY:
+    DOCKER_BUILD="docker buildx build --builder buildkit"
+
+def kernel_build(args):
+    global DEBUG
+    global DOCKER_BUILD
+    DEBUG = args.v
+    if DEBUG:
+        DOCKER_BUILD = "BUILDKIT_PROGRESS=plain " + DOCKER_BUILD
+    _kernel_build(args.local, args.push, args.path, args.org, args.tag, args.ksrc, args.src, args.ramfs, args.arg)
+
+def _kernel_build(local, push, paths, org, tag, ksrc, src, ramfs, arg):
+    for path in paths:
+        cmd=""
+        if local:
+            if ramfs:
+                cmd = "cp -rf {RAMFS} {KDIR}/{MOD}/{RAMFS}; \
+                    pushd {KDIR}/{MOD}; \
+                    sudo docker run --net host \
+                    -v $(pwd):/workspace \
+                    -v {SRC}:/src \
+                    -v {KSRC}:/kernel \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -it {DOCKERHUB}/{IMAGE} \
+                    sh -c \"cd /src;\
+                        sh /workspace/build.sh local 1111 {MOD} {ORG} {TAG} /workspace/{RAMFS}\"; \
+                    rm -rf {RAMFS}; \
+                    popd".format(KDIR=KERNEL_PATH, KSRC=ksrc, SRC=src,
+                        MOD=path, ORG=org, TAG=tag, DOCKERHUB=DOCKERHUB, IMAGE=IMAGE_MAP[path],
+                        RAMFS=ramfs)
+            else:
+                cmd = "pushd {KDIR}/{MOD}; \
+                    sudo docker run --net host \
+                    -v $(pwd):/workspace \
+                    -v {SRC}:/src \
+                    -v {KSRC}:/kernel \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -it {DOCKERHUB}/{IMAGE} \
+                    sh -c \"cd /src;\
+                        sh /workspace/build.sh local 1111 {MOD} {ORG} {TAG}\"; \
+                    popd".format(KDIR=KERNEL_PATH, KSRC=ksrc, SRC=src,
+                        MOD=path, ORG=org, TAG=tag, DOCKERHUB=DOCKERHUB, IMAGE=IMAGE_MAP[path])
+        else:
+            if push:
+                cmd = "pushd {KDIR}/{MOD}; \
+                    sudo {BUILD} \
+                        --net host \
+                        --rm \
+                        --build-arg {ARG} \
+                        --force-rm \
+                        --push \
+                        -t {ORG}/{MOD}:{TAG} .; \
+                    popd".format(BUILD=DOCKER_BUILD, KDIR=KERNEL_PATH, ORG=org, MOD=path, TAG=tag, ARG=arg)
+            else:
+                cmd = "pushd {KDIR}/{MOD}; \
+                    sudo {BUILD} \
+                        --net host \
+                        --rm \
+                        --build-arg {ARG} \
+                        --force-rm \
+                        --load \
+                        -t {ORG}/{MOD}:{TAG} .; \
+                    popd".format(BUILD=DOCKER_BUILD, KDIR=KERNEL_PATH, ORG=org, MOD=path, TAG=tag, ARG=arg)
+
+        if DEBUG: print(bcolors.OKBLUE + cmd + bcolors.ENDC)
+        os.system(cmd)
+        #if push:
+        #    os.system("sudo docker push {}/{}:{}".format(org, path, tag))
+def kernel_push(args):
+    _kernel_push(args)
+
+def _kernel_push(args):
+    for path in args.path:
+        os.system("sudo docker push {}/{}:{}".format(args.org, path, args.tag))
+
+def pkg_build(args):
+    global MOBY
+    dockerfile = ""
+    if args.file:
+        dockerfile = "-f " + args.file
+
+    for path in args.path:
+        if MOBY:
+            if args.push:
+                os.system("pushd {0}/{2};sudo {6} --network host --build-arg {5} --rm --force-rm  --no-cache --push -t {1}/{2}:{3} {4} .; popd".format(PKG_PATH, args.org, path, args.tag, dockerfile, args.arg, DOCKER_BUILD))
+            else:
+                os.system("pushd {0}/{2};sudo {6} --net host --build-arg {5} --rm --force-rm --load -t {1}/{2}:{3} {4} .; popd".format(PKG_PATH, args.org, path, args.tag, dockerfile, args.arg, DOCKER_BUILD))
+        else:
+            os.system("pushd {0}/{2};sudo {6} --net host --build-arg {5} --rm --force-rm -t {1}/{2}:{3} {4} .; popd".format(PKG_PATH, args.org, path, args.tag, dockerfile, args.arg, DOCKER_BUILD))
+            if args.push:
+                os.system("sudo docker push {}/{}:{}".format(args.org, path, args.tag))
+
+
+def pkg_push(args):
+    for path in args.path:
+        os.system("sudo docker push {}/{}:{}".format(args.org, path, args.tag))
+
+class OsKit(object):
+
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            usage='''USAGE: oskit <command> [<args>]
+
+Commands:
+  build       Build an image from a YAML file
+  kernel      Kernel and kernel modules building
+  pkg         Package building
+  run         Run a VM image on a local hypervisor or remote cloud
+  serve       Run a local http server (for iPXE booting)
+  lookup      Lookup filesystem in docker image
+  grub        Update current image to host grub
+  version     Print version information
+  help        Print this message
+
+Run 'oskit COMMAND --help' for more information on the command
+
+optional arguments:
+  -h, --help  show this help message and exit
+''')
+        parser.add_argument('command', help='Subcommand to run')
+        # parse_args defaults to [1:] for args, but you need to
+        # exclude the rest of the args too, or validation will fail
+        args = parser.parse_args(sys.argv[1:2])
+        if not hasattr(self, args.command):
+            print('Unrecognized command')
+            parser.print_help()
+            exit(1)
+        # use dispatch pattern to invoke method with same name
+        getattr(self, args.command)()
+
+    def build(self):
+        parser = argparse.ArgumentParser()
+        # prefixing the argument with -- means it's optional
+        # now that we're inside a subcommand, ignore the first
+        # TWO argvs, ie the command (git) and the subcommand (commit)
+        parser.add_argument('file', help='input *.yml')
+        parser.add_argument('-format', type=str, choices=["ramfs", "ramdisk"], default="ramfs")
+        parser.add_argument('-docker', action='store_true')
+        args = parser.parse_args(sys.argv[2:])
+
+        name = args.file.split(".")[0]
+        if args.docker:
+            os.system("./bin/linuxkit_{} build -docker {}".format(arch, args.file))
+        else:
+            os.system("./bin/linuxkit_{} build -pull {}".format(arch, args.file))
+        if args.format == "ramdisk":
+            os.system("mv {name}-initrd.img {name}-initrd.img.gz; gunzip {name}-initrd.img.gz; mkdir -p .tmp-siliconfast; cd .tmp-siliconfast;sudo cpio -idvm < ../{name}-initrd.img 2 > /dev/null".format(name=name))
+            os.system("sudo sh ./bin/genext2fs.sh .tmp-siliconfast {name}-ramdisk;  ".format(name=name))
+
+    def run(self):
+        parser = argparse.ArgumentParser(
+            description='Run a VM image on a local hypervisor after build')
+        # NOT prefixing the argument with -- means it's not optional
+        parser.add_argument('image', help="image name")
+        args = parser.parse_args(sys.argv[2:])
+
+        ramfs = args.image + "-initrd.cpio"
+        ramdisk = args.image + "-ramdisk"
+        name = ramfs
+        if os.path.isfile(ramfs) and os.path.isfile(ramdisk):
+            time1 = os.path.getmtime(ramfs)
+            time2 = os.path.getmtime(ramdisk)
+            name = ramfs if time1 >= time2 else ramdisk
+        elif os.path.isfile(ramdisk):
+            name = ramdisk
+        os.system("sudo docker run --net host -v $(pwd):/workspace -it reg.docker.alibaba-inc.com/silicon_fast/qemu_{0}:7.1.0 \
+                qemu-system-aarch64 -smp 4 -m 8G -cpu neoverse-n1 -machine virt -kernel {1}-kernel -initrd {2} -device virtio-net-pci,netdev=t0 -netdev user,id=t0 -append \"$(cat {1}-cmdline)\" -nographic".format(platform.machine(), args.image, name))
+
+    def pkg(self):
+        parser = argparse.ArgumentParser(
+            description='Package building')
+        subparsers = parser.add_subparsers(help='sub-command help')
+        build = subparsers.add_parser('build', help='add help')
+        build.add_argument("-org")
+        build.add_argument("-tag")
+        build.add_argument("-file")
+        build.add_argument("-arg")
+        build.add_argument("-push", action='store_true')
+        build.add_argument("path", nargs="+")
+        build.set_defaults(func=pkg_build)
+        push = subparsers.add_parser('push', help='sub help')
+        push.add_argument("-org")
+        push.add_argument("-tag")
+        push.add_argument("path")
+        push.set_defaults(func=pkg_push)
+        args = parser.parse_args(sys.argv[2:])
+        print(args)
+        args.func(args)
+
+    def kernel(self):
+        parser = argparse.ArgumentParser(
+            description='Kernel building')
+        subparsers = parser.add_subparsers(help='sub-command help')
+        build = subparsers.add_parser('build', help='add help')
+        build.add_argument("-org")
+        build.add_argument("-tag")
+        build.add_argument("-ksrc")
+        build.add_argument("-arg")
+        build.add_argument("-src")
+        build.add_argument("-ramfs")
+        build.add_argument("-push", action='store_true')
+        build.add_argument("-local", action='store_true')
+        build.add_argument("-v", action='store_true')
+        build.add_argument("path", nargs="+")
+        build.set_defaults(func=kernel_build)
+        push = subparsers.add_parser('push', help='sub help')
+        push.add_argument("-org")
+        push.add_argument("-tag")
+        push.add_argument("path", nargs="+")
+        push.set_defaults(func=kernel_push)
+        args = parser.parse_args(sys.argv[2:])
+        print(args)
+        args.func(args)
+
+    def lookup(self):
+        parser = argparse.ArgumentParser(
+            description='Lookup filesystem in docker image')
+        # NOT prefixing the argument with -- means it's not optional
+        parser.add_argument('image', help="image name")
+        args = parser.parse_args(sys.argv[2:])
+        os.system("sudo docker run --net host -v /var/run/docker.sock:/var/run/docker.sock -it reg.docker.alibaba-inc.com/silicon_fast/dive:latest dive {}".format(args.image))
+
+    def grub(self):
+        parser = argparse.ArgumentParser(
+            description='Lookup filesystem in docker image')
+        parser.add_argument('image', help="image name")
+        args = parser.parse_args(sys.argv[2:])
+        name = args.image
+
+        kernel = f"{name}-kernel"
+        os.system(f"cp -i -b {kernel} /boot/")
+
+        initrd = f"{name}-initrd.img"
+        os.system(f"cp -i -b {initrd} /boot/")
+
+        title = f"{name} (SiliconFastOS)"
+        cmdline = ""
+        with open(f"{name}-cmdline", "r") as lines:
+            for line in lines.readlines():
+                cmdline = f"{cmdline} {line.strip()}"
+        cmd_str = f"sudo grubby --add-kernel=/boot/{kernel} --title=\"{title}\" --initrd=/boot/{initrd} --copy-default"
+        os.system(f"sudo grubby --remove-kernel=/boot/{kernel}")
+        os.system(cmd_str)
+
+        index = os.popen(f"grubby --info=/boot/{kernel} | grep index | cut -d = -f 2").read()
+        kargs = os.popen(f"grubby --info=/boot/{kernel} | grep args | cut -d = -f 2-").read().strip()[1:-1]
+
+        os.system(f"sudo grubby --remove-args=\"root {kargs}\" --update-kernel=/boot/{kernel}")
+        os.system(f"sudo grubby --args=\"{cmdline}\" --update-kernel=/boot/{kernel}")
+        print("\nSiliconFastOS add new grub entry:")
+        os.system(f"grubby --info=/boot/{kernel}")
+        os.system(f"sudo grub2-reboot {index}")
+        print("\nNext reboot will use SiliconFastOS entry!")
+
+
+
+
+
+
+if __name__ == '__main__':
+    OsKit()
