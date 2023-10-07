@@ -1,0 +1,222 @@
+From 24fbf584da6bc15e2afb341f3da7f4fff97e2389 Mon Sep 17 00:00:00 2001
+From: William Sun <william.sht@alibaba-inc.com>
+Date: Tue, 26 Sep 2023 17:44:13 +0800
+Subject: [PATCH] ramdisk: ramdisk null blk support
+
+Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
+Signed-off-by: Feng Su <sufeng.su@alibaba-inc.com>
+---
+ arch/arm64/configs/defconfig  |  1 +
+ drivers/block/brd.c           |  6 ++--
+ drivers/block/null_blk_main.c | 77 +++++++++++++++++++++++++++++++++++++++++--
+ include/linux/sysctl.h        |  2 ++
+ kernel/sysctl.c               | 14 ++++++++
+ 5 files changed, 95 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 1dd206d..cbb2076 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -266,6 +266,7 @@ CONFIG_BLK_DEV_RAM_COUNT=1
+ CONFIG_BLK_DEV_RAM_SIZE=2097152
+ CONFIG_VIRTIO_BLK=y
+ CONFIG_BLK_DEV_NVME=m
++CONFIG_BLK_DEV_NULL_BLK=y
+ CONFIG_SRAM=y
+ CONFIG_PCI_ENDPOINT_TEST=m
+ CONFIG_EEPROM_AT24=m
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index 9c743ad..434e22f 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -370,7 +370,9 @@ static int __init ramdisk_size(char *str)
+ static LIST_HEAD(brd_devices);
+ static DEFINE_MUTEX(brd_devices_mutex);
+ 
+-static unsigned long emuinitrd_start, emuinitrd_end;
++unsigned long emuinitrd_start, emuinitrd_end;
++EXPORT_SYMBOL(emuinitrd_start);
++
+ void __init brd_setup(unsigned long start, unsigned long end)
+ {
+ 	emuinitrd_start = start;
+@@ -381,7 +383,7 @@ static struct brd_device *brd_alloc(int i)
+ {
+ 	struct brd_device *brd;
+ 	struct gendisk *disk;
+-	unsigned long rd_start = emuinitrd_start, rd_end = emuinitrd_end;
++	unsigned long rd_start = emuinitrd_start, rd_end = rd_start + (rd_size << 10);
+ 	struct page *rdpage = virt_to_page(rd_start);
+ 	sector_t sector;
+ 	pgoff_t idx;
+diff --git a/drivers/block/null_blk_main.c b/drivers/block/null_blk_main.c
+index bb3686c..8375b05 100644
+--- a/drivers/block/null_blk_main.c
++++ b/drivers/block/null_blk_main.c
+@@ -72,6 +72,9 @@ struct nullb_page {
+ static DEFINE_IDA(nullb_indexes);
+ static struct blk_mq_tag_set tag_set;
+ 
++int null_blk_start = 512;
++int null_blk_size = 2048;
++
+ enum {
+ 	NULL_IRQ_NONE		= 0,
+ 	NULL_IRQ_SOFTIRQ	= 1,
+@@ -144,7 +147,7 @@ static int null_set_queue_mode(const char *str, const struct kernel_param *kp)
+ device_param_cb(queue_mode, &null_queue_mode_param_ops, &g_queue_mode, 0444);
+ MODULE_PARM_DESC(queue_mode, "Block interface to use (0=bio,1=rq,2=multiqueue)");
+ 
+-static int g_gb = 250;
++static int g_gb = 512;
+ module_param_named(gb, g_gb, int, 0444);
+ MODULE_PARM_DESC(gb, "Size in GB");
+ 
+@@ -196,6 +199,10 @@ static int null_set_irqmode(const char *str, const struct kernel_param *kp)
+ module_param_named(use_per_node_hctx, g_use_per_node_hctx, bool, 0444);
+ MODULE_PARM_DESC(use_per_node_hctx, "Use per-node allocation for hardware context queues. Default: false");
+ 
++static bool g_memory_backed = true;
++module_param_named(memory_backed, g_memory_backed, bool, 0444);
++MODULE_PARM_DESC(memory_backed, "Create a memory-backed block device. Default: false");
++
+ static bool g_zoned;
+ module_param_named(zoned, g_zoned, bool, S_IRUGO);
+ MODULE_PARM_DESC(zoned, "Make device as a host-managed zoned block device. Default: false");
+@@ -581,8 +588,8 @@ static struct nullb_device *null_alloc_dev(void)
+ 		kfree(dev);
+ 		return NULL;
+ 	}
+-
+-	dev->size = g_gb * 1024;
++	g_gb = null_blk_size;	
++	dev->size = g_gb;
+ 	dev->completion_nsec = g_completion_nsec;
+ 	dev->submit_queues = g_submit_queues;
+ 	dev->home_node = g_home_node;
+@@ -591,6 +598,7 @@ static struct nullb_device *null_alloc_dev(void)
+ 	dev->irqmode = g_irqmode;
+ 	dev->hw_queue_depth = g_hw_queue_depth;
+ 	dev->blocking = g_blocking;
++	dev->memory_backed = g_memory_backed;
+ 	dev->use_per_node_hctx = g_use_per_node_hctx;
+ 	dev->zoned = g_zoned;
+ 	dev->zone_size = g_zone_size;
+@@ -895,6 +903,59 @@ static struct nullb_page *null_insert_page(struct nullb *nullb,
+ 	return null_lookup_page(nullb, sector, true, ignore_cache);
+ }
+ 
++extern unsigned long emuinitrd_start;
++int nullb_emu_init(struct nullb *nullb)
++{
++        unsigned long null_base, null_start, null_end;
++        struct page* npage;
++        struct nullb_page *t_page;
++        sector_t sector;
++        pgoff_t idx;
++        int i;
++
++
++        null_base = null_start = emuinitrd_start + null_blk_start * 1024 * 1024;
++        null_end = null_start + null_blk_size * 1024 * 1024;
++        pr_err("%s:%d null_start = %lx, null_end = %lx\n", __func__, __LINE__, null_start, null_end);
++        while (null_start < null_end) {
++                        npage = virt_to_page(null_start);
++
++                        if (radix_tree_preload(GFP_NOIO)) {
++                                __free_page(npage);
++                                pr_crit("%s %d radix preload err\n", __func__, __LINE__);
++                                return -ENOMEM;
++                        }
++
++
++                        t_page = kmalloc(sizeof(struct nullb_page), GFP_NOIO);
++                        if (!t_page)
++                                return -ENOMEM;
++
++                        t_page->page = npage;
++                        for (i = 0; i < PAGE_SECTORS;
++                                i += (nullb->dev->blocksize >> SECTOR_SHIFT)) {
++                                __set_bit(i, t_page->bitmap);
++                        }
++
++                        spin_lock(&nullb->lock);
++                        sector = (null_start - null_base) / SECTOR_SIZE;
++                        idx = sector >> PAGE_SECTORS_SHIFT;
++                        npage->index = idx;
++                        if (radix_tree_insert(&nullb->dev->data, idx, t_page)) {
++                                pr_crit("%s %d radix insert err\n", __func__, __LINE__);
++                                t_page = radix_tree_lookup(&nullb->dev->data, idx);
++                                BUG_ON(!t_page);
++                                BUG_ON(t_page->page->index != idx);
++                        }
++
++                        spin_unlock(&nullb->lock);
++
++                        radix_tree_preload_end();
++                        null_start += PAGE_SIZE;
++        }
++        return 0;
++}
++
+ static int null_flush_cache_page(struct nullb *nullb, struct nullb_page *c_page)
+ {
+ 	int i;
+@@ -1895,6 +1956,16 @@ static int null_add_dev(struct nullb_device *dev)
+ 	list_add_tail(&nullb->list, &nullb_list);
+ 	mutex_unlock(&lock);
+ 
++	if (config_item_name(&dev->item)) {
++                if (!strncmp(config_item_name(&dev->item), "nullb_emu", 9))
++                {
++                        rv = nullb_emu_init(nullb);
++                        if (rv)
++                                goto out;
++			pr_info("emu null blk init\n");
++                }
++        }
++
+ 	return 0;
+ out_cleanup_zone:
+ 	null_free_zoned_dev(dev);
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 51298a4..19ec573 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -42,6 +42,8 @@
+ #define SYSCTL_ONE	((void *)&sysctl_vals[1])
+ #define SYSCTL_INT_MAX	((void *)&sysctl_vals[2])
+ 
++extern int null_blk_start;
++extern int null_blk_size;
+ extern const int sysctl_vals[];
+ 
+ typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index f0dd1a3..917ff32 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -3368,6 +3368,20 @@ int proc_do_static_key(struct ctl_table *table, int write,
+ 		.proc_handler	= proc_dointvec_minmax,
+ 		.extra1		= SYSCTL_ONE,
+ 	},
++        {
++                .procname       = "null_blk_start",
++                .data           = &null_blk_start,
++                .maxlen         = sizeof(int),
++                .mode           = 0644,
++                .proc_handler   = proc_dointvec,
++        },
++        {
++                .procname       = "null_blk_size",
++                .data           = &null_blk_size,
++                .maxlen         = sizeof(int),
++                .mode           = 0644,
++                .proc_handler   = proc_dointvec,
++        },
+ 	{ }
+ };
+ 
+-- 
+1.8.3.1
+
