@@ -1,0 +1,276 @@
+From 4566040fac9b83ad3dd70e577fcb05dcece26ef9 Mon Sep 17 00:00:00 2001
+From: William Sun <william.sht@alibaba-inc.com>
+Date: Fri, 22 Sep 2023 16:38:27 +0800
+Subject: [PATCH] ramdisk: ramdisk driver support
+
+Use speical memory range to create block device rather than create a new
+block.
+
+Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
+Signed-off-by: Guanghui Feng <guanghuifeng@linux.alibaba.com>
+---
+ arch/arm64/configs/defconfig |  7 +++++++
+ drivers/block/brd.c          | 45 ++++++++++++++++++++++++++++++++++++++++++--
+ drivers/of/fdt.c             | 25 ++++++++++++++++--------
+ include/linux/initrd.h       |  2 +-
+ init/do_mounts_rd.c          |  7 +++++--
+ init/initramfs.c             |  5 +++++
+ init/main.c                  |  6 +++++-
+ 7 files changed, 83 insertions(+), 14 deletions(-)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 2bdf38d..1dd206d 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -259,7 +259,11 @@ CONFIG_MTD_NAND_QCOM=y
+ CONFIG_MTD_SPI_NOR=y
+ CONFIG_SPI_CADENCE_QUADSPI=y
+ CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_LOOP_MIN_COUNT=1
+ CONFIG_BLK_DEV_NBD=m
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=1
++CONFIG_BLK_DEV_RAM_SIZE=2097152
+ CONFIG_VIRTIO_BLK=y
+ CONFIG_BLK_DEV_NVME=m
+ CONFIG_SRAM=y
+@@ -1047,7 +1051,10 @@ CONFIG_INTERCONNECT_QCOM_SM8150=m
+ CONFIG_INTERCONNECT_QCOM_SM8250=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
++CONFIG_EXT4_FS=y
++CONFIG_EXT4_USE_FOR_EXT2=y
+ CONFIG_EXT4_FS_POSIX_ACL=y
++CONFIG_EXT4_FS_SECURITY=y
+ CONFIG_BTRFS_FS=m
+ CONFIG_BTRFS_FS_POSIX_ACL=y
+ CONFIG_FANOTIFY=y
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index cc49a92..9c743ad 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -341,7 +341,7 @@ static int brd_rw_page(struct block_device *bdev, sector_t sector,
+ module_param(rd_nr, int, 0444);
+ MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
+ 
+-unsigned long rd_size = CONFIG_BLK_DEV_RAM_SIZE;
++unsigned long rd_size;
+ module_param(rd_size, ulong, 0444);
+ MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
+ 
+@@ -360,7 +360,7 @@ static int __init ramdisk_size(char *str)
+ 	rd_size = simple_strtol(str, NULL, 0);
+ 	return 1;
+ }
+-__setup("ramdisk_size=", ramdisk_size);
++early_param("ramdisk_size=", ramdisk_size);
+ #endif
+ 
+ /*
+@@ -370,10 +370,21 @@ static int __init ramdisk_size(char *str)
+ static LIST_HEAD(brd_devices);
+ static DEFINE_MUTEX(brd_devices_mutex);
+ 
++static unsigned long emuinitrd_start, emuinitrd_end;
++void __init brd_setup(unsigned long start, unsigned long end)
++{
++	emuinitrd_start = start;
++	emuinitrd_end = end;
++}
++
+ static struct brd_device *brd_alloc(int i)
+ {
+ 	struct brd_device *brd;
+ 	struct gendisk *disk;
++	unsigned long rd_start = emuinitrd_start, rd_end = emuinitrd_end;
++	struct page *rdpage = virt_to_page(rd_start);
++	sector_t sector;
++	pgoff_t idx;
+ 
+ 	brd = kzalloc(sizeof(*brd), GFP_KERNEL);
+ 	if (!brd)
+@@ -408,6 +419,36 @@ static struct brd_device *brd_alloc(int i)
+ 	blk_queue_flag_set(QUEUE_FLAG_NONROT, brd->brd_queue);
+ 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, brd->brd_queue);
+ 
++	if (i == 0 && rd_start != 0) {
++		pr_crit("%s %d rd driver init start: %lx end: %lx\n", __func__, __LINE__,
++							rd_start, rd_end);
++		while (rd_start < rd_end) {
++			rdpage = virt_to_page(rd_start);
++
++			if (radix_tree_preload(GFP_NOIO)) {
++				__free_page(rdpage);
++				pr_crit("%s %d radix preload err\n", __func__, __LINE__);
++				return NULL;
++			}
++
++			spin_lock(&brd->brd_lock);
++			sector = (rd_start - emuinitrd_start) / SECTOR_SIZE;
++			idx = sector >> PAGE_SECTORS_SHIFT;
++			rdpage->index = idx;
++			if (radix_tree_insert(&brd->brd_pages, idx, rdpage)) {
++				pr_crit("%s %d radix insert err\n", __func__, __LINE__);
++				__free_page(rdpage);
++				rdpage = radix_tree_lookup(&brd->brd_pages, idx);
++				BUG_ON(!rdpage);
++				BUG_ON(rdpage->index != idx);
++			}
++			spin_unlock(&brd->brd_lock);
++
++			radix_tree_preload_end();
++			rd_start += PAGE_SIZE;
++		}
++	}
++
+ 	return brd;
+ 
+ out_free_queue:
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 57ff31b..7f4c8c5 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -874,23 +874,31 @@ static void __init early_init_dt_check_for_initrd(unsigned long node)
+ 	int len;
+ 	const __be32 *prop;
+ 
+-	pr_debug("Looking for initrd properties... ");
++	pr_info("Looking for initrd properties... ");
+ 
+ 	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
+-	if (!prop)
++	if (rd_image_start) {
++		pr_info("[SiliconFastOS ramdisk]: use special ramdisk start!\n");
++		start = rd_image_start;
++	} else if (prop)
++		start = of_read_number(prop, len/4);
++	else
+ 		return;
+-	start = of_read_number(prop, len/4);
+ 
+ 	prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
+-	if (!prop)
++	if (rd_size) {
++		pr_info("[SiliconFastOS ramdisk]: use special ramdisk size!\n");
++		end = start + (rd_size << 10);
++	} else if (prop)
++		end = of_read_number(prop, len/4);
++	else
+ 		return;
+-	end = of_read_number(prop, len/4);
+ 
+ 	__early_init_dt_declare_initrd(start, end);
+ 	phys_initrd_start = start;
+ 	phys_initrd_size = end - start;
+ 
+-	pr_debug("initrd_start=0x%llx  initrd_end=0x%llx\n",
++	pr_info("initrd_start=0x%llx  initrd_end=0x%llx\n",
+ 		 (unsigned long long)start, (unsigned long long)end);
+ }
+ #else
+@@ -1049,8 +1057,6 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
+ 		return 0;
+ 
+-	early_init_dt_check_for_initrd(node);
+-
+ 	/* Retrieve command line */
+ 	p = of_get_flat_dt_prop(node, "bootargs", &l);
+ 	if (p != NULL && l > 0)
+@@ -1076,6 +1082,9 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 
+ 	pr_debug("Command line is: %s\n", (char *)data);
+ 
++	parse_early_param();
++	early_init_dt_check_for_initrd(node);
++
+ 	rng_seed = of_get_flat_dt_prop(node, "rng-seed", &l);
+ 	if (rng_seed && l > 0) {
+ 		add_bootloader_randomness(rng_seed, l);
+diff --git a/include/linux/initrd.h b/include/linux/initrd.h
+index 8db6f8c..c45b1c8 100644
+--- a/include/linux/initrd.h
++++ b/include/linux/initrd.h
+@@ -3,7 +3,7 @@
+ #define INITRD_MINOR 250 /* shouldn't collide with /dev/ram* too soon ... */
+ 
+ /* starting block # of image */
+-extern int rd_image_start;
++extern u64 rd_image_start;
+ 
+ /* size of a single RAM disk */
+ extern unsigned long rd_size;
+diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
+index ac021ae..0c2d593 100644
+--- a/init/do_mounts_rd.c
++++ b/init/do_mounts_rd.c
+@@ -24,14 +24,15 @@ static int __init prompt_ramdisk(char *str)
+ }
+ __setup("prompt_ramdisk=", prompt_ramdisk);
+ 
+-int __initdata rd_image_start;		/* starting block # of image */
++u64 __initdata rd_image_start;		/* starting block # of image */
+ 
++void brd_setup(unsigned long start, unsigned long end);
+ static int __init ramdisk_start_setup(char *str)
+ {
+ 	rd_image_start = simple_strtol(str,NULL,0);
+ 	return 1;
+ }
+-__setup("ramdisk_start=", ramdisk_start_setup);
++early_param("ramdisk_start=", ramdisk_start_setup);
+ 
+ static int __init crd_load(decompress_fn deco);
+ 
+@@ -199,6 +200,8 @@ int __init rd_load_image(char *from)
+ 	if (IS_ERR(out_file))
+ 		goto out;
+ 
++	return 0;
++
+ 	in_file = filp_open(from, O_RDONLY, 0);
+ 	if (IS_ERR(in_file))
+ 		goto noclose_input;
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 55b74d7..7439203 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -579,6 +579,7 @@ static inline bool kexec_free_initrd(void)
+ #endif /* CONFIG_KEXEC_CORE */
+ 
+ #ifdef CONFIG_BLK_DEV_RAM
++void brd_setup(unsigned long start, unsigned long end);
+ static void __init populate_initrd_image(char *err)
+ {
+ 	ssize_t written;
+@@ -589,6 +590,10 @@ static void __init populate_initrd_image(char *err)
+ 
+ 	printk(KERN_INFO "rootfs image is not initramfs (%s); looks like an initrd\n",
+ 			err);
++
++	brd_setup(initrd_start, initrd_end);
++	return;
++
+ 	file = filp_open("/initrd.image", O_WRONLY | O_CREAT, 0700);
+ 	if (IS_ERR(file))
+ 		return;
+diff --git a/init/main.c b/init/main.c
+index d8bfe61..c8d8dfa 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -731,7 +731,11 @@ static int __init do_early_param(char *param, char *val,
+ 	for (p = __setup_start; p < __setup_end; p++) {
+ 		if ((p->early && parameq(param, p->str)) ||
+ 		    (strcmp(param, "console") == 0 &&
+-		     strcmp(p->str, "earlycon") == 0)
++		     strcmp(p->str, "earlycon") == 0) ||
++			(strcmp(param, "ramdisk_size") == 0 &&
++			 strcmp(p->str, "ramdisk_size=") == 0) ||
++			(strcmp(param, "ramdisk_start") == 0 &&
++			 strcmp(p->str, "ramdisk_start=") == 0)
+ 		) {
+ 			if (p->setup_func(val) != 0)
+ 				pr_warn("Malformed early option '%s'\n", param);
+-- 
+1.8.3.1
+
