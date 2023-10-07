@@ -1,0 +1,222 @@
+From 8165d6f8ae80f8ba90ca3bc7f83bbca0001f33c9 Mon Sep 17 00:00:00 2001
+From: Yao Hongbo <yaohongbo@linux.alibaba.com>
+Date: Thu, 13 May 2021 11:43:36 +0800
+Subject: [PATCH] pci: add pci delay boot param to support booting pci later
+
+For some simulation enviroment, it takes long time to boot,
+Add a pcie delay boot param "pci=delay" to speed up.
+And, we support to reinit pci in OS with the following cmd:
+echo 1 > /sys/firmware/acpi/force_rescan
+
+Signed-off-by: Yao Hongbo <yaohongbo@linux.alibaba.com>
+---
+ arch/arm64/include/asm/acpi.h |  7 +++++++
+ arch/arm64/kernel/acpi.c      | 15 +++++++++++++++
+ drivers/acpi/pci_root.c       | 26 ++++++++++++++++++++++++++
+ drivers/acpi/scan.c           |  6 ++++--
+ drivers/acpi/sysfs.c          | 35 +++++++++++++++++++++++++++++++++++
+ drivers/pci/ecam.c            |  5 ++++-
+ 6 files changed, 91 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+index 1a415d17660a..60cc9cbc5dce 100644
+--- a/arch/arm64/include/asm/acpi.h
++++ b/arch/arm64/include/asm/acpi.h
+@@ -57,6 +57,13 @@ typedef u64 phys_cpuid_t;
+ extern int acpi_disabled;
+ extern int acpi_noirq;
+ extern int acpi_pci_disabled;
++extern int acpi_pci_delayed;
++
++enum {
++	ACPI_PCI_NOT_DELAY,
++	ACPI_PCI_DELAY_IN_BOOT,
++	ACPI_PCI_FORCE_RESCAN,
++};
+ 
+ static inline void disable_acpi(void)
+ {
+diff --git a/arch/arm64/kernel/acpi.c b/arch/arm64/kernel/acpi.c
+index cada0b816c8a..7e3755bffec0 100644
+--- a/arch/arm64/kernel/acpi.c
++++ b/arch/arm64/kernel/acpi.c
+@@ -39,6 +39,9 @@ EXPORT_SYMBOL(acpi_disabled);
+ int acpi_pci_disabled = 1;	/* skip ACPI PCI scan and IRQ initialization */
+ EXPORT_SYMBOL(acpi_pci_disabled);
+ 
++int acpi_pci_delayed = ACPI_PCI_NOT_DELAY; /* skip ACPI PCI scan and later force rescan*/
++EXPORT_SYMBOL(acpi_pci_delayed);
++
+ static bool param_acpi_off __initdata;
+ static bool param_acpi_on __initdata;
+ static bool param_acpi_force __initdata;
+@@ -62,6 +65,18 @@ static int __init parse_acpi(char *arg)
+ }
+ early_param("acpi", parse_acpi);
+ 
++static int __init parse_pci(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	if (strcmp(arg, "delay") == 0)
++		acpi_pci_delayed = ACPI_PCI_DELAY_IN_BOOT;
++
++	return 0;
++}
++early_param("pci", parse_pci);
++
+ static int __init dt_scan_depth1_nodes(unsigned long node,
+ 				       const char *uname, int depth,
+ 				       void *data)
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index c12b5fb3e8fb..81cc18f39cc8 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -524,6 +524,30 @@ static void negotiate_os_control(struct acpi_pci_root *root, int *no_aspm,
+ 	}
+ }
+ 
++
++static DEFINE_MUTEX(acpi_scan_lock);
++extern struct acpi_device *acpi_root;
++void pcie_force_rescan(void)
++{
++	int result;
++
++	mutex_lock(&acpi_scan_lock);
++	result = acpi_bus_scan(ACPI_ROOT_OBJECT);
++	if (result) {
++		printk("bus scan failed!\n");
++		goto out;
++	}
++
++	result = acpi_bus_get_device(ACPI_ROOT_OBJECT, &acpi_root);
++	if (result) {
++		printk("get device failed!\n");
++		goto out;
++	}
++out:
++	mutex_unlock(&acpi_scan_lock);
++	printk("force rescan success!\n");
++}
++
+ static int acpi_pci_root_add(struct acpi_device *device,
+ 			     const struct acpi_device_id *not_used)
+ {
+@@ -595,6 +619,8 @@ static int acpi_pci_root_add(struct acpi_device *device,
+ 	is_pcie = strcmp(acpi_device_hid(device), "PNP0A08") == 0;
+ 	negotiate_os_control(root, &no_aspm, is_pcie);
+ 
++	if (acpi_pci_delayed == ACPI_PCI_DELAY_IN_BOOT)
++		return 1;
+ 	/*
+ 	 * TBD: Need PCI interface for enumeration/configuration of roots.
+ 	 */
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index dca5cc423cd4..6fd43e6c4ea4 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -1993,7 +1993,8 @@ static void acpi_bus_attach(struct acpi_device *device)
+ 		device->flags.power_manageable = 0;
+ 		return;
+ 	}
+-	if (device->handler)
++	if (device->handler &&
++		acpi_pci_delayed != ACPI_PCI_FORCE_RESCAN)
+ 		goto ok;
+ 
+ 	if (!device->flags.initialized) {
+@@ -2003,7 +2004,8 @@ static void acpi_bus_attach(struct acpi_device *device)
+ 			device->flags.power_manageable = 0;
+ 
+ 		device->flags.initialized = true;
+-	} else if (device->flags.visited) {
++	} else if (device->flags.visited &&
++			   acpi_pci_delayed != ACPI_PCI_FORCE_RESCAN) {
+ 		goto ok;
+ 	}
+ 
+diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+index a5cc4f3bb1e3..151320eabe48 100644
+--- a/drivers/acpi/sysfs.c
++++ b/drivers/acpi/sysfs.c
+@@ -1029,10 +1029,41 @@ static ssize_t force_remove_store(struct kobject *kobj,
+ 	return size;
+ }
+ 
++extern void pcie_force_rescan(void);
++static ssize_t force_rescan_show(struct kobject *kobj,
++			struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", 0);
++}
++
++static ssize_t force_rescan_store(struct kobject *kobj,
++		struct kobj_attribute *attr, const char *buf, size_t size)
++{
++	bool val;
++	int ret;
++	int pre = acpi_pci_delayed;
++
++	ret = strtobool(buf, &val);
++	if (ret < 0)
++		return ret;
++
++	if (val) {
++		acpi_pci_delayed = ACPI_PCI_FORCE_RESCAN;
++		pcie_force_rescan();
++		acpi_pci_delayed = pre;
++	}
++
++	return size;
++}
++
+ static const struct kobj_attribute force_remove_attr =
+ 	__ATTR(force_remove, S_IRUGO | S_IWUSR, force_remove_show,
+ 	       force_remove_store);
+ 
++static const struct kobj_attribute force_rescan_attr =
++    __ATTR(force_rescan, S_IRUGO | S_IWUSR, force_rescan_show,
++			force_rescan_store);
++
+ int __init acpi_sysfs_init(void)
+ {
+ 	int result;
+@@ -1049,6 +1080,10 @@ int __init acpi_sysfs_init(void)
+ 	if (result)
+ 		return result;
+ 
++	result = sysfs_create_file(acpi_kobj, &force_rescan_attr.attr);
++	if (result)
++		return result;
++
+ 	result = sysfs_create_file(acpi_kobj, &pm_profile_attr.attr);
+ 	return result;
+ }
+diff --git a/drivers/pci/ecam.c b/drivers/pci/ecam.c
+index b54d32a31669..734170191799 100644
+--- a/drivers/pci/ecam.c
++++ b/drivers/pci/ecam.c
+@@ -10,6 +10,7 @@
+ #include <linux/pci.h>
+ #include <linux/pci-ecam.h>
+ #include <linux/slab.h>
++#include <linux/acpi.h>
+ 
+ /*
+  * On 64-bit systems, we do a single ioremap for the whole config space
+@@ -65,7 +66,9 @@ struct pci_config_window *pci_ecam_create(struct device *dev,
+ 		err = -EBUSY;
+ 		dev_err(dev, "can't claim ECAM area %pR: address conflict with %s %pR\n",
+ 			&cfg->res, conflict->name, conflict);
+-		goto err_exit;
++
++		if (acpi_pci_delayed != ACPI_PCI_FORCE_RESCAN)
++			goto err_exit;
+ 	}
+ 
+ 	if (per_bus_mapping) {
+-- 
+2.33.1
+
